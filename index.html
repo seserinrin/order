@@ -1,0 +1,547 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>訂單管理系統</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:'Noto Sans TC',Arial,sans-serif;font-size:13px;background:#f5f5f5;color:#222;}
+  header{background:#1a56db;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
+  header h1{font-size:18px;font-weight:600;letter-spacing:0.5px;}
+  header .user-info{font-size:13px;opacity:0.85;}
+  .main{padding:20px 24px;}
+  .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  .toolbar input,.toolbar select{font-size:13px;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#222;height:34px;}
+  .toolbar input{width:200px;}
+  .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;font-size:13px;font-weight:500;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;height:34px;transition:background 0.15s;}
+  .btn:hover{background:#f3f4f6;}
+  .btn.primary{background:#1a56db;color:#fff;border-color:#1a56db;}
+  .btn.primary:hover{background:#1e40af;}
+  .btn.success{background:#16a34a;color:#fff;border-color:#16a34a;}
+  .btn.success:hover{background:#15803d;}
+  .btn.danger{background:#dc2626;color:#fff;border-color:#dc2626;font-size:12px;padding:4px 10px;height:28px;}
+  .btn.danger:hover{background:#b91c1c;}
+  .btn.sm{padding:4px 10px;font-size:12px;height:28px;}
+  .summary-bar{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
+  .stat{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;min-width:120px;}
+  .stat-label{font-size:11px;color:#6b7280;margin-bottom:2px;}
+  .stat-val{font-size:20px;font-weight:600;color:#111;}
+  .stat-val.blue{color:#1a56db;}
+  .stat-val.green{color:#16a34a;}
+  .stat-val.amber{color:#d97706;}
+  .tabs{display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #e5e7eb;}
+  .tab{padding:8px 20px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;color:#6b7280;transition:all 0.15s;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;}
+  .tab.active{color:#1a56db;border-bottom-color:#1a56db;font-weight:500;}
+  .tab:hover:not(.active){background:#f9fafb;color:#374151;}
+  .badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;font-size:11px;font-weight:500;margin-left:5px;}
+  .badge-blue{background:#dbeafe;color:#1e40af;}
+  .badge-gray{background:#f3f4f6;color:#6b7280;}
+  .tbl-wrap{overflow-x:auto;border:1px solid #e5e7eb;border-radius:0 8px 8px 8px;background:#fff;margin-top:0;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  thead tr{background:#f9fafb;}
+  th{padding:9px 10px;text-align:left;font-weight:500;color:#6b7280;white-space:nowrap;border-bottom:1px solid #e5e7eb;position:sticky;top:0;background:#f9fafb;z-index:1;}
+  td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap;}
+  tr:last-child td{border-bottom:none;}
+  tr:hover td{background:#f9fafb;}
+  tr.closed td{opacity:0.55;}
+  .chk{width:15px;height:15px;accent-color:#1a56db;cursor:pointer;}
+  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;}
+  .tag-yes{background:#dcfce7;color:#166534;}
+  .tag-no{background:#f3f4f6;color:#6b7280;}
+  .tag-partial{background:#fef3c7;color:#92400e;}
+  .tag-missing{background:#fee2e2;color:#991b1b;}
+  .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
+  .dot-green{background:#16a34a;}
+  .dot-amber{background:#d97706;}
+  .dot-red{background:#dc2626;}
+  .dot-gray{background:#9ca3af;}
+  .order-no{font-weight:600;color:#1a56db;cursor:pointer;}
+  .order-no:hover{text-decoration:underline;}
+  /* Modal */
+  .modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto;}
+  .modal-bg.show{display:flex;}
+  .modal{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:24px;width:780px;max-width:95vw;position:relative;margin-bottom:30px;}
+  .modal h3{font-size:16px;font-weight:600;margin-bottom:16px;padding-right:30px;}
+  .close-btn{position:absolute;top:16px;right:16px;cursor:pointer;font-size:18px;color:#9ca3af;background:none;border:none;line-height:1;}
+  .close-btn:hover{color:#374151;}
+  .sec-title{font-size:11px;font-weight:600;color:#9ca3af;letter-spacing:0.8px;text-transform:uppercase;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f3f4f6;}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px;}
+  .field label{font-size:11px;color:#6b7280;display:block;margin-bottom:3px;}
+  .field input,.field select,.field textarea{width:100%;padding:7px 9px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#222;transition:border-color 0.15s;}
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#1a56db;box-shadow:0 0 0 3px rgba(26,86,219,0.12);}
+  .field input.readonly{background:#f9fafb;color:#6b7280;}
+  .field textarea{resize:vertical;min-height:64px;font-family:inherit;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #f3f4f6;}
+  /* Loading */
+  .loading{text-align:center;padding:40px;color:#6b7280;}
+  .spinner{display:inline-block;width:24px;height:24px;border:3px solid #e5e7eb;border-top-color:#1a56db;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:10px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  /* Toast */
+  .toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(10px);transition:all 0.3s;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.success{background:#16a34a;}
+  .toast.error{background:#dc2626;}
+  /* Empty state */
+  .empty{text-align:center;padding:48px;color:#9ca3af;}
+  .empty-icon{font-size:40px;margin-bottom:12px;}
+  .empty p{font-size:14px;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📦 訂單管理系統</h1>
+  <div class="user-info" id="syncStatus">⏳ 連線中...</div>
+</header>
+
+<div class="main">
+  <div class="toolbar">
+    <input type="text" id="searchBox" placeholder="搜尋訂單號、客戶、產品..." oninput="render()">
+    <select id="filterStatus" onchange="render()">
+      <option value="">全部狀態</option>
+      <option value="待出貨">待出貨</option>
+      <option value="部分出貨">部分出貨</option>
+      <option value="已出清">已出清</option>
+    </select>
+    <select id="filterSales" onchange="render()">
+      <option value="">全部業務</option>
+    </select>
+    <button class="btn primary" onclick="openModal()">＋ 新增訂單</button>
+    <button class="btn success" onclick="syncData()">⟳ 同步資料</button>
+    <button class="btn" onclick="exportCSV()">↓ 匯出 CSV</button>
+  </div>
+
+  <div class="summary-bar" id="summaryBar"></div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-active" onclick="switchTab('active')">進行中訂單 <span class="badge badge-blue" id="cnt-active">0</span></button>
+    <button class="tab" id="tab-closed" onclick="switchTab('closed')">已結案訂單 <span class="badge badge-gray" id="cnt-closed">0</span></button>
+  </div>
+
+  <div class="tbl-wrap">
+    <div id="tblContent">
+      <div class="loading"><div class="spinner"></div><br>載入中...</div>
+    </div>
+  </div>
+</div>
+
+<!-- 新增/編輯 Modal -->
+<div class="modal-bg" id="modalBg">
+<div class="modal">
+  <button class="close-btn" onclick="closeModal()">✕</button>
+  <h3 id="modalTitle">新增訂單</h3>
+
+  <div class="sec-title">基本資訊</div>
+  <div class="grid3">
+    <div class="field"><label>訂購單號 *</label><input id="f_no" placeholder="SO-2024-001"></div>
+    <div class="field"><label>業務代號</label><input id="f_sales_code" placeholder="S01"></div>
+    <div class="field"><label>業務姓名</label><input id="f_sales_name" placeholder="王小明"></div>
+    <div class="field"><label>客戶簡稱 *</label><input id="f_customer" placeholder="台積電"></div>
+    <div class="field"><label>客戶訂單號</label><input id="f_cust_order" placeholder="PO-8888"></div>
+    <div class="field"><label>來源單號</label><input id="f_source_no" placeholder="QT-001"></div>
+  </div>
+  <div class="grid3" style="margin-top:10px;">
+    <div class="field"><label>訂購日期</label><input type="date" id="f_order_date"></div>
+    <div class="field"><label>預交日期</label><input type="date" id="f_delivery_date"></div>
+    <div class="field"><label>更新預交日</label><input type="date" id="f_new_delivery_date"></div>
+  </div>
+
+  <div class="sec-title">產品明細</div>
+  <div class="grid3">
+    <div class="field"><label>欄號</label><input id="f_col" placeholder="001"></div>
+    <div class="field"><label>產品編號</label><input id="f_prod_no" placeholder="P-12345"></div>
+    <div class="field"><label>品名規格 *</label><input id="f_prod_name" placeholder="精密電阻 0402 10K"></div>
+    <div class="field"><label>數量</label><input type="number" id="f_qty" placeholder="0" oninput="calcAmt()"></div>
+    <div class="field"><label>已出數量</label><input type="number" id="f_shipped" placeholder="0" oninput="calcAmt()"></div>
+    <div class="field"><label>現有庫存數量</label><input type="number" id="f_stock" placeholder="0"></div>
+  </div>
+
+  <div class="sec-title">金額資訊</div>
+  <div class="grid3">
+    <div class="field"><label>使用幣別</label>
+      <select id="f_currency" onchange="calcAmt()">
+        <option>TWD</option><option>USD</option><option>EUR</option><option>JPY</option><option>CNY</option>
+      </select>
+    </div>
+    <div class="field"><label>匯率</label><input type="number" id="f_rate" value="1" step="0.01" oninput="calcAmt()"></div>
+    <div class="field"><label>是否含稅</label>
+      <select id="f_tax"><option value="是">是</option><option value="否">否</option></select>
+    </div>
+    <div class="field"><label>單價</label><input type="number" id="f_price" placeholder="0.00" step="0.01" oninput="calcAmt()"></div>
+    <div class="field"><label>金額（自動計算）</label><input id="f_amount" class="readonly" readonly></div>
+    <div class="field"><label>未出金額（自動計算）</label><input id="f_unship_amt" class="readonly" readonly></div>
+    <div class="field"><label>未出本幣金額（自動計算）</label><input id="f_unship_local" class="readonly" readonly></div>
+  </div>
+
+  <div class="sec-title">其他資訊</div>
+  <div class="grid2">
+    <div class="field"><label>入料狀況</label>
+      <select id="f_material">
+        <option>待確認</option><option>已備料</option><option>部分入料</option><option>缺料</option>
+      </select>
+    </div>
+    <div class="field"><label>已轉採購建議</label>
+      <select id="f_purchase"><option value="否">否</option><option value="是">是</option></select>
+    </div>
+    <div class="field"><label>細項描述</label><textarea id="f_desc" placeholder="詳細說明..."></textarea></div>
+    <div class="field"><label>分錄備註</label><textarea id="f_note" placeholder="備註..."></textarea></div>
+  </div>
+
+  <div class="modal-actions">
+    <button class="btn" onclick="closeModal()">取消</button>
+    <button class="btn primary" onclick="saveOrder()">💾 儲存</button>
+  </div>
+</div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ============================================================
+//  設定區：填入你的 Google Apps Script 網址
+// ============================================================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec';
+// ============================================================
+
+let orders = [];
+let editId = null;
+let activeTab = 'active';
+let isSaving = false;
+
+// ---- 工具函式 ----
+function showToast(msg, type='success'){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  setTimeout(()=>{ t.className='toast'; }, 3000);
+}
+
+function calcAmt(){
+  const qty = parseFloat(document.getElementById('f_qty').value)||0;
+  const shipped = parseFloat(document.getElementById('f_shipped').value)||0;
+  const price = parseFloat(document.getElementById('f_price').value)||0;
+  const rate = parseFloat(document.getElementById('f_rate').value)||1;
+  const unship = Math.max(0, qty - shipped);
+  document.getElementById('f_amount').value = (qty*price).toFixed(2);
+  document.getElementById('f_unship_amt').value = (unship*price).toFixed(2);
+  document.getElementById('f_unship_local').value = (unship*price*rate).toFixed(2);
+}
+
+function calcFields(o){
+  o.qty = parseFloat(o.qty)||0;
+  o.shipped = parseFloat(o.shipped)||0;
+  o.stock = parseFloat(o.stock)||0;
+  o.price = parseFloat(o.price)||0;
+  o.rate = parseFloat(o.rate)||1;
+  o.unshipped = Math.max(0, o.qty - o.shipped);
+  o.amount = o.qty * o.price;
+  o.unship_amt = o.unshipped * o.price;
+  o.unship_local = o.unship_amt * o.rate;
+  o.status = o.unshipped === 0 ? '已出清' : o.shipped > 0 ? '部分出貨' : '待出貨';
+  o.closed = o.closed === true || o.closed === 'TRUE' || o.closed === '1';
+  return o;
+}
+
+// ---- API 呼叫 ----
+async function apiCall(action, data={}){
+  const body = { action, ...data };
+  const resp = await fetch(SCRIPT_URL, {
+    method:'POST',
+    body: JSON.stringify(body)
+  });
+  const json = await resp.json();
+  if(!json.success) throw new Error(json.error||'未知錯誤');
+  return json;
+}
+
+async function syncData(){
+  document.getElementById('syncStatus').textContent = '⏳ 同步中...';
+  try {
+    if(SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec'){
+      // Demo 模式：載入範例資料
+      orders = getDemoData();
+      orders.forEach(calcFields);
+      document.getElementById('syncStatus').textContent = '⚠️ Demo 模式（尚未設定 Script URL）';
+      render();
+      return;
+    }
+    const res = await apiCall('getAll');
+    orders = (res.data||[]).map(calcFields);
+    document.getElementById('syncStatus').textContent = '✅ 已同步 ' + new Date().toLocaleTimeString('zh-TW');
+    showToast('資料已同步');
+    render();
+  } catch(e) {
+    document.getElementById('syncStatus').textContent = '❌ 同步失敗';
+    showToast('同步失敗：' + e.message, 'error');
+    // 載入 Demo 資料
+    orders = getDemoData();
+    orders.forEach(calcFields);
+    render();
+  }
+}
+
+// ---- 頁面切換 ----
+function switchTab(tab){
+  activeTab = tab;
+  document.getElementById('tab-active').className = 'tab' + (tab==='active'?' active':'');
+  document.getElementById('tab-closed').className = 'tab' + (tab==='closed'?' active':'');
+  render();
+}
+
+// ---- 渲染 ----
+function render(){
+  const search = document.getElementById('searchBox').value.toLowerCase();
+  const fStatus = document.getElementById('filterStatus').value;
+  const fSales = document.getElementById('filterSales').value;
+
+  // 更新業務篩選
+  const salesSet = [...new Set(orders.map(o=>o.sales_name).filter(Boolean))];
+  const sel = document.getElementById('filterSales');
+  const curSales = sel.value;
+  sel.innerHTML = '<option value="">全部業務</option>' + salesSet.map(s=>`<option${s===curSales?' selected':''}>${s}</option>`).join('');
+
+  const active = orders.filter(o=>!o.closed);
+  const closed = orders.filter(o=>o.closed);
+  document.getElementById('cnt-active').textContent = active.length;
+  document.getElementById('cnt-closed').textContent = closed.length;
+
+  const list = (activeTab==='active' ? active : closed).filter(o=>{
+    if(search && ![o.no,o.customer,o.prod_name,o.prod_no,o.sales_name].some(v=>v&&v.toLowerCase().includes(search))) return false;
+    if(fStatus && o.status!==fStatus) return false;
+    if(fSales && o.sales_name!==fSales) return false;
+    return true;
+  });
+
+  // Summary
+  const totalAmt = list.reduce((s,o)=>s+o.unship_local,0);
+  const totalQty = list.reduce((s,o)=>s+o.qty,0);
+  const countLow = list.filter(o=>o.material==='缺料').length;
+  document.getElementById('summaryBar').innerHTML = `
+    <div class="stat"><div class="stat-label">訂單筆數</div><div class="stat-val blue">${list.length}</div></div>
+    <div class="stat"><div class="stat-label">總訂購數量</div><div class="stat-val">${totalQty.toLocaleString()}</div></div>
+    <div class="stat"><div class="stat-label">未出本幣金額</div><div class="stat-val green">${Math.round(totalAmt).toLocaleString()}</div></div>
+    <div class="stat"><div class="stat-label">缺料筆數</div><div class="stat-val amber">${countLow}</div></div>
+  `;
+
+  if(list.length===0){
+    document.getElementById('tblContent').innerHTML = `<div class="empty"><div class="empty-icon">📋</div><p>沒有符合條件的訂單</p></div>`;
+    return;
+  }
+
+  function dot(o){
+    if(o.closed) return '<span class="status-dot dot-gray"></span>';
+    if(o.status==='已出清') return '<span class="status-dot dot-green"></span>';
+    if(o.status==='部分出貨') return '<span class="status-dot dot-amber"></span>';
+    return '<span class="status-dot dot-red"></span>';
+  }
+  function matTag(m){
+    if(m==='已備料') return '<span class="tag tag-yes">已備料</span>';
+    if(m==='缺料') return '<span class="tag tag-missing">缺料</span>';
+    if(m==='部分入料') return '<span class="tag tag-partial">部分入料</span>';
+    return '<span class="tag tag-no">待確認</span>';
+  }
+
+  const rows = list.map(o=>`
+    <tr class="${o.closed?'closed':''}">
+      <td><input type="checkbox" class="chk" ${o.closed?'checked':''} onchange="toggleClose('${o.id}')" title="${o.closed?'恢復進行中':'標記完成結案'}"></td>
+      <td><span class="order-no" onclick="openModal('${o.id}')">${o.no}</span></td>
+      <td>${o.sales_code||''}</td>
+      <td>${o.sales_name||''}</td>
+      <td style="font-weight:500">${o.customer}</td>
+      <td>${o.order_date||''}</td>
+      <td>${o.delivery_date||''}</td>
+      <td>${o.new_delivery_date||'—'}</td>
+      <td>${o.cust_order||''}</td>
+      <td>${o.col||''}</td>
+      <td style="color:#6b7280">${o.prod_no||''}</td>
+      <td>${o.prod_name}</td>
+      <td style="text-align:right">${o.qty.toLocaleString()}</td>
+      <td style="text-align:right;color:#16a34a">${o.shipped.toLocaleString()}</td>
+      <td style="text-align:right;color:${o.unshipped>0?'#d97706':'#9ca3af'}">${o.unshipped.toLocaleString()}</td>
+      <td style="text-align:right">${o.stock.toLocaleString()}</td>
+      <td>${o.currency||'TWD'}</td>
+      <td style="text-align:right">${parseFloat(o.price||0).toFixed(2)}</td>
+      <td style="text-align:right">${o.amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="text-align:right">${o.unship_amt.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="text-align:right">${Math.round(o.unship_local).toLocaleString()}</td>
+      <td style="text-align:right">${o.rate}</td>
+      <td><span class="tag ${o.tax==='是'?'tag-yes':'tag-no'}">${o.tax||'否'}</span></td>
+      <td>${matTag(o.material)}</td>
+      <td><span class="tag ${o.purchase==='是'?'tag-yes':'tag-no'}">${o.purchase||'否'}</span></td>
+      <td style="color:#9ca3af;font-size:11px">${o.source_no||'—'}</td>
+      <td>
+        <button class="btn sm" onclick="openModal('${o.id}')">編輯</button>
+        <button class="btn danger sm" onclick="deleteOrder('${o.id}')">刪除</button>
+      </td>
+    </tr>`).join('');
+
+  document.getElementById('tblContent').innerHTML = `
+    <table>
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th>訂購單號</th><th>業務代號</th><th>業務姓名</th><th>客戶</th>
+      <th>訂購日期</th><th>預交日期</th><th>更新預交</th><th>客戶訂單</th>
+      <th>欄號</th><th>產品編號</th><th>品名規格</th>
+      <th>數量</th><th>已出</th><th>未出</th><th>現有庫存</th>
+      <th>幣別</th><th>單價</th><th>金額</th><th>未出金額</th><th>未出本幣</th>
+      <th>匯率</th><th>含稅</th><th>入料狀況</th><th>已轉採購</th><th>來源單號</th>
+      <th>操作</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ---- Modal ----
+function openModal(id){
+  editId = id||null;
+  document.getElementById('modalTitle').textContent = id ? '編輯訂單' : '新增訂單';
+  if(id){
+    const o = orders.find(x=>String(x.id)===String(id));
+    if(o){
+      ['no','sales_code','sales_name','customer','cust_order','source_no',
+       'order_date','delivery_date','new_delivery_date','col','prod_no','prod_name',
+       'qty','shipped','stock','currency','rate','tax','price','desc','note','material','purchase'
+      ].forEach(k=>{ const el=document.getElementById('f_'+k); if(el) el.value=o[k]||''; });
+      document.getElementById('f_amount').value = o.amount.toFixed(2);
+      document.getElementById('f_unship_amt').value = o.unship_amt.toFixed(2);
+      document.getElementById('f_unship_local').value = Math.round(o.unship_local).toString();
+    }
+  } else {
+    ['no','sales_code','sales_name','customer','cust_order','source_no',
+     'col','prod_no','prod_name','qty','shipped','stock','price','desc','note'
+    ].forEach(k=>{ const el=document.getElementById('f_'+k); if(el) el.value=''; });
+    document.getElementById('f_rate').value='1';
+    document.getElementById('f_amount').value='';
+    document.getElementById('f_unship_amt').value='';
+    document.getElementById('f_unship_local').value='';
+    document.getElementById('f_order_date').value=new Date().toISOString().split('T')[0];
+    document.getElementById('f_delivery_date').value='';
+    document.getElementById('f_new_delivery_date').value='';
+    document.getElementById('f_currency').value='TWD';
+    document.getElementById('f_tax').value='是';
+    document.getElementById('f_material').value='待確認';
+    document.getElementById('f_purchase').value='否';
+  }
+  document.getElementById('modalBg').classList.add('show');
+}
+
+function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
+
+async function saveOrder(){
+  if(isSaving) return;
+  const no = document.getElementById('f_no').value.trim();
+  const customer = document.getElementById('f_customer').value.trim();
+  const prod_name = document.getElementById('f_prod_name').value.trim();
+  if(!no||!customer||!prod_name){ showToast('請填寫訂購單號、客戶、品名', 'error'); return; }
+
+  const g = id => document.getElementById('f_'+id).value.trim();
+  const o = {
+    no, customer, prod_name,
+    sales_code:g('sales_code'), sales_name:g('sales_name'),
+    cust_order:g('cust_order'), source_no:g('source_no'),
+    order_date:g('order_date'), delivery_date:g('delivery_date'),
+    new_delivery_date:g('new_delivery_date'),
+    col:g('col'), prod_no:g('prod_no'),
+    qty:parseFloat(g('qty'))||0, shipped:parseFloat(g('shipped'))||0,
+    stock:parseFloat(g('stock'))||0,
+    currency:g('currency'), rate:parseFloat(g('rate'))||1,
+    tax:g('tax'), price:parseFloat(g('price'))||0,
+    desc:g('desc'), note:g('note'),
+    material:g('material'), purchase:g('purchase'),
+    closed: editId ? (orders.find(x=>String(x.id)===String(editId))?.closed||false) : false
+  };
+  calcFields(o);
+
+  isSaving = true;
+  try {
+    if(SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec'){
+      if(editId){
+        await apiCall('update', {id: editId, data: o});
+        const idx = orders.findIndex(x=>String(x.id)===String(editId));
+        if(idx>=0){ o.id=editId; orders[idx]=o; }
+      } else {
+        const res = await apiCall('add', {data: o});
+        o.id = res.id;
+        orders.push(o);
+      }
+    } else {
+      // Demo 模式
+      if(editId){
+        const idx = orders.findIndex(x=>String(x.id)===String(editId));
+        if(idx>=0){ o.id=editId; orders[idx]=o; }
+      } else {
+        o.id = 'D' + Date.now();
+        orders.push(o);
+      }
+    }
+    showToast(editId ? '訂單已更新' : '訂單已新增');
+    closeModal();
+    render();
+  } catch(e){
+    showToast('儲存失敗：'+e.message, 'error');
+  }
+  isSaving = false;
+}
+
+async function toggleClose(id){
+  const o = orders.find(x=>String(x.id)===String(id));
+  if(!o) return;
+  o.closed = !o.closed;
+  try {
+    if(SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec'){
+      await apiCall('update', {id, data:{...o, closed: o.closed}});
+    }
+    showToast(o.closed ? '已結案' : '已恢復進行中');
+    render();
+  } catch(e){
+    o.closed = !o.closed; // rollback
+    showToast('操作失敗：'+e.message, 'error');
+    render();
+  }
+}
+
+async function deleteOrder(id){
+  if(!confirm('確定要刪除此訂單？')) return;
+  try {
+    if(SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec'){
+      await apiCall('delete', {id});
+    }
+    orders = orders.filter(x=>String(x.id)!==String(id));
+    showToast('訂單已刪除');
+    render();
+  } catch(e){
+    showToast('刪除失敗：'+e.message, 'error');
+  }
+}
+
+function exportCSV(){
+  const list = orders.filter(o => activeTab==='active' ? !o.closed : o.closed);
+  const headers = ['訂購單號','業務代號','業務姓名','客戶','客戶訂單','訂購日期','預交日期','更新預交日',
+    '欄號','產品編號','品名規格','數量','已出','未出','現有庫存','幣別','單價','金額','未出金額','未出本幣','匯率','含稅','入料狀況','已轉採購','來源單號','狀態'];
+  const rows = list.map(o=>[o.no,o.sales_code,o.sales_name,o.customer,o.cust_order,o.order_date,o.delivery_date,o.new_delivery_date,
+    o.col,o.prod_no,o.prod_name,o.qty,o.shipped,o.unshipped,o.stock,o.currency,o.price,o.amount.toFixed(2),o.unship_amt.toFixed(2),Math.round(o.unship_local),o.rate,o.tax,o.material,o.purchase,o.source_no,o.status]
+    .map(v=>'"'+(String(v||'').replace(/"/g,'""'))+'"').join(','));
+  const csv = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = `訂單_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.csv`;
+  a.click();
+}
+
+function getDemoData(){
+  return [
+    {id:'D1',no:'SO-2024-001',sales_code:'S01',sales_name:'王小明',customer:'台積電',cust_order:'PO-9001',source_no:'QT-001',order_date:'2024-03-01',delivery_date:'2024-04-15',new_delivery_date:'2024-04-20',col:'001',prod_no:'P-10001',prod_name:'精密電阻 0402 10K',qty:5000,shipped:2000,stock:800,currency:'USD',rate:32.5,tax:'是',price:0.05,desc:'RoHS合規',note:'急單',material:'已備料',purchase:'是',closed:false},
+    {id:'D2',no:'SO-2024-002',sales_code:'S02',sales_name:'李大華',customer:'聯發科',cust_order:'PO-7701',source_no:'',order_date:'2024-03-05',delivery_date:'2024-04-30',new_delivery_date:'',col:'001',prod_no:'P-20033',prod_name:'MLCC 100nF 0603',qty:10000,shipped:10000,stock:0,currency:'TWD',rate:1,tax:'否',price:1.2,desc:'',note:'',material:'已備料',purchase:'是',closed:true},
+    {id:'D3',no:'SO-2024-003',sales_code:'S01',sales_name:'王小明',customer:'鴻海',cust_order:'PO-5512',source_no:'QT-008',order_date:'2024-03-10',delivery_date:'2024-05-01',new_delivery_date:'2024-05-10',col:'002',prod_no:'P-33201',prod_name:'IC 驅動晶片 DRV8876',qty:200,shipped:50,stock:120,currency:'USD',rate:32.5,tax:'是',price:4.80,desc:'需認證',note:'',material:'部分入料',purchase:'否',closed:false},
+    {id:'D4',no:'SO-2024-004',sales_code:'S03',sales_name:'陳美玲',customer:'廣達',cust_order:'PO-3309',source_no:'',order_date:'2024-03-15',delivery_date:'2024-05-20',new_delivery_date:'',col:'001',prod_no:'P-44010',prod_name:'電感 4.7uH 0805',qty:3000,shipped:0,stock:0,currency:'JPY',rate:0.21,tax:'否',price:80,desc:'',note:'確認交期',material:'缺料',purchase:'否',closed:false},
+  ];
+}
+
+// 啟動
+syncData();
+</script>
+</body>
+</html>
