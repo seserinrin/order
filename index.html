@@ -467,8 +467,8 @@ tr.closed-row td{opacity:0.5;}
 
 <script>
 // ============================================================
-const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
-const API_TOKEN  = 'YOUR_SECRET_TOKEN_HERE';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMcicFAXFC4uejQcgkpBVHwRDfkU412UvTP3VSYEPQj_lII_07qIjuZxm694ea4rx3WQ/exec';
+const API_TOKEN  = 'E5kingyoup04705536';
 // ============================================================
 
 let db = {orders:[],purchase:[],service:[],inventory:[]};
@@ -511,7 +511,7 @@ function switchPage(page,el){
 
 // ── API ──
 async function apiCall(action,data={}){
-  if(SCRIPT_URL==='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') throw new Error('demo');
+  if(SCRIPT_URL==='https://script.google.com/macros/s/AKfycbyMcicFAXFC4uejQcgkpBVHwRDfkU412UvTP3VSYEPQj_lII_07qIjuZxm694ea4rx3WQ/exec') throw new Error('demo');
   const r=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action,token:API_TOKEN,...data})});
   const j=await r.json();
   if(!j.success) throw new Error(j.error||'error');
