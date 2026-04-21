@@ -3,545 +3,979 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>訂單管理系統</title>
+<title>業務管理系統</title>
+<link href="https://script.google.com/macros/s/AKfycbyMcicFAXFC4uejQcgkpBVHwRDfkU412UvTP3VSYEPQj_lII_07qIjuZxm694ea4rx3WQ/exec" rel="stylesheet">
 <style>
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Noto Sans TC',Arial,sans-serif;font-size:13px;background:#f5f5f5;color:#222;}
-  header{background:#1a56db;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;}
-  header h1{font-size:18px;font-weight:600;letter-spacing:0.5px;}
-  header .user-info{font-size:13px;opacity:0.85;}
-  .main{padding:20px 24px;}
-  .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
-  .toolbar input,.toolbar select{font-size:13px;padding:7px 10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#222;height:34px;}
-  .toolbar input{width:200px;}
-  .btn{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;font-size:13px;font-weight:500;border-radius:6px;border:1px solid #d1d5db;background:#fff;color:#374151;cursor:pointer;height:34px;transition:background 0.15s;}
-  .btn:hover{background:#f3f4f6;}
-  .btn.primary{background:#1a56db;color:#fff;border-color:#1a56db;}
-  .btn.primary:hover{background:#1e40af;}
-  .btn.success{background:#16a34a;color:#fff;border-color:#16a34a;}
-  .btn.success:hover{background:#15803d;}
-  .btn.danger{background:#dc2626;color:#fff;border-color:#dc2626;font-size:12px;padding:4px 10px;height:28px;}
-  .btn.danger:hover{background:#b91c1c;}
-  .btn.sm{padding:4px 10px;font-size:12px;height:28px;}
-  .summary-bar{display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;}
-  .stat{background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:10px 16px;min-width:120px;}
-  .stat-label{font-size:11px;color:#6b7280;margin-bottom:2px;}
-  .stat-val{font-size:20px;font-weight:600;color:#111;}
-  .stat-val.blue{color:#1a56db;}
-  .stat-val.green{color:#16a34a;}
-  .stat-val.amber{color:#d97706;}
-  .tabs{display:flex;gap:0;margin-bottom:0;border-bottom:2px solid #e5e7eb;}
-  .tab{padding:8px 20px;font-size:13px;cursor:pointer;border-radius:6px 6px 0 0;color:#6b7280;transition:all 0.15s;background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;}
-  .tab.active{color:#1a56db;border-bottom-color:#1a56db;font-weight:500;}
-  .tab:hover:not(.active){background:#f9fafb;color:#374151;}
-  .badge{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 6px;border-radius:10px;font-size:11px;font-weight:500;margin-left:5px;}
-  .badge-blue{background:#dbeafe;color:#1e40af;}
-  .badge-gray{background:#f3f4f6;color:#6b7280;}
-  .tbl-wrap{overflow-x:auto;border:1px solid #e5e7eb;border-radius:0 8px 8px 8px;background:#fff;margin-top:0;}
-  table{width:100%;border-collapse:collapse;font-size:12px;}
-  thead tr{background:#f9fafb;}
-  th{padding:9px 10px;text-align:left;font-weight:500;color:#6b7280;white-space:nowrap;border-bottom:1px solid #e5e7eb;position:sticky;top:0;background:#f9fafb;z-index:1;}
-  td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap;}
-  tr:last-child td{border-bottom:none;}
-  tr:hover td{background:#f9fafb;}
-  tr.closed td{opacity:0.55;}
-  .chk{width:15px;height:15px;accent-color:#1a56db;cursor:pointer;}
-  .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;}
-  .tag-yes{background:#dcfce7;color:#166534;}
-  .tag-no{background:#f3f4f6;color:#6b7280;}
-  .tag-partial{background:#fef3c7;color:#92400e;}
-  .tag-missing{background:#fee2e2;color:#991b1b;}
-  .status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:4px;}
-  .dot-green{background:#16a34a;}
-  .dot-amber{background:#d97706;}
-  .dot-red{background:#dc2626;}
-  .dot-gray{background:#9ca3af;}
-  .order-no{font-weight:600;color:#1a56db;cursor:pointer;}
-  .order-no:hover{text-decoration:underline;}
-  /* Modal */
-  .modal-bg{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-start;justify-content:center;padding-top:30px;overflow-y:auto;}
-  .modal-bg.show{display:flex;}
-  .modal{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:24px;width:780px;max-width:95vw;position:relative;margin-bottom:30px;}
-  .modal h3{font-size:16px;font-weight:600;margin-bottom:16px;padding-right:30px;}
-  .close-btn{position:absolute;top:16px;right:16px;cursor:pointer;font-size:18px;color:#9ca3af;background:none;border:none;line-height:1;}
-  .close-btn:hover{color:#374151;}
-  .sec-title{font-size:11px;font-weight:600;color:#9ca3af;letter-spacing:0.8px;text-transform:uppercase;margin:16px 0 8px;padding-bottom:6px;border-bottom:1px solid #f3f4f6;}
-  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 20px;}
-  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 20px;}
-  .field label{font-size:11px;color:#6b7280;display:block;margin-bottom:3px;}
-  .field input,.field select,.field textarea{width:100%;padding:7px 9px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#222;transition:border-color 0.15s;}
-  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:#1a56db;box-shadow:0 0 0 3px rgba(26,86,219,0.12);}
-  .field input.readonly{background:#f9fafb;color:#6b7280;}
-  .field textarea{resize:vertical;min-height:64px;font-family:inherit;}
-  .modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid #f3f4f6;}
-  /* Loading */
-  .loading{text-align:center;padding:40px;color:#6b7280;}
-  .spinner{display:inline-block;width:24px;height:24px;border:3px solid #e5e7eb;border-top-color:#1a56db;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:10px;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-  /* Toast */
-  .toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:12px 20px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(10px);transition:all 0.3s;}
-  .toast.show{opacity:1;transform:translateY(0);}
-  .toast.success{background:#16a34a;}
-  .toast.error{background:#dc2626;}
-  /* Empty state */
-  .empty{text-align:center;padding:48px;color:#9ca3af;}
-  .empty-icon{font-size:40px;margin-bottom:12px;}
-  .empty p{font-size:14px;}
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --nav-w:200px;
+  --blue:#1a56db;--blue-d:#1344b0;--blue-l:#e8f0fe;
+  --green:#16a34a;--green-l:#dcfce7;
+  --amber:#d97706;--amber-l:#fef3c7;
+  --red:#dc2626;--red-l:#fee2e2;
+  --gray:#6b7280;--gray-l:#f3f4f6;
+  --border:#e5e7eb;
+  --text:#111827;--text2:#6b7280;--text3:#9ca3af;
+  --bg:#f8fafc;--card:#fff;
+  --topbar-h:52px;
+}
+body{font-family:'Noto Sans TC',sans-serif;font-size:13px;background:var(--bg);color:var(--text);display:flex;min-height:100vh;}
+
+/* ── Sidebar ── */
+.sidebar{width:var(--nav-w);background:#1e2330;color:#fff;display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;height:100vh;z-index:50;transition:transform 0.25s;}
+.sidebar-logo{padding:20px 16px 16px;border-bottom:1px solid rgba(255,255,255,0.08);}
+.sidebar-logo h1{font-size:15px;font-weight:600;color:#fff;}
+.sidebar-logo p{font-size:11px;color:rgba(255,255,255,0.4);margin-top:2px;}
+.nav-section{padding:12px 0 4px;}
+.nav-label{font-size:10px;font-weight:600;color:rgba(255,255,255,0.3);letter-spacing:1px;padding:0 16px 6px;text-transform:uppercase;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 16px;font-size:13px;color:rgba(255,255,255,0.65);cursor:pointer;transition:all 0.15s;border-left:3px solid transparent;}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:#fff;}
+.nav-item.active{background:rgba(26,86,219,0.25);color:#fff;border-left-color:var(--blue);}
+.nav-item .icon{font-size:16px;width:20px;text-align:center;}
+.nav-item .nbadge{margin-left:auto;background:var(--blue);color:#fff;font-size:10px;padding:1px 6px;border-radius:8px;}
+.sidebar-footer{margin-top:auto;padding:12px 16px;border-top:1px solid rgba(255,255,255,0.08);font-size:11px;color:rgba(255,255,255,0.3);}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:49;}
+
+/* ── Main ── */
+.main{margin-left:var(--nav-w);flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:0 20px;height:var(--topbar-h);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.menu-toggle{display:none;background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2);padding:4px;}
+.topbar-title{font-size:15px;font-weight:600;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.sync-status{font-size:12px;color:var(--text2);}
+.content{padding:16px 20px;flex:1;}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;font-size:13px;font-weight:500;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);cursor:pointer;height:34px;transition:background 0.15s;white-space:nowrap;}
+.btn:hover{background:var(--gray-l);}
+.btn.primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+.btn.primary:hover{background:var(--blue-d);}
+.btn.success{background:var(--green);color:#fff;border-color:var(--green);}
+.btn.success:hover{background:#15803d;}
+.btn.sm{padding:4px 10px;font-size:12px;height:28px;}
+.btn.danger{background:var(--red);color:#fff;border-color:var(--red);}
+.btn.icon-only{padding:6px 10px;font-size:16px;}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+.toolbar input,.toolbar select{font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);height:34px;}
+.toolbar input{width:200px;max-width:100%;}
+
+/* ── Stats ── */
+.stats{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.stat{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 16px;min-width:100px;flex:1;}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:2px;}
+.stat-val{font-size:20px;font-weight:600;}
+.stat-val.blue{color:var(--blue);}
+.stat-val.green{color:var(--green);}
+.stat-val.amber{color:var(--amber);}
+.stat-val.red{color:var(--red);}
+
+/* ── Tabs ── */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:0;overflow-x:auto;}
+.tab{padding:8px 16px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--text2);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all 0.15s;white-space:nowrap;flex-shrink:0;}
+.tab.active{color:var(--blue);border-bottom-color:var(--blue);font-weight:500;}
+.tab:hover:not(.active){background:var(--gray-l);}
+.badge-tab{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;padding:0 5px;border-radius:9px;font-size:10px;font-weight:600;margin-left:4px;}
+.bt-blue{background:var(--blue-l);color:var(--blue);}
+.bt-gray{background:var(--gray-l);color:var(--gray);}
+
+/* ── Table (desktop) ── */
+.tbl-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:0 8px 8px 8px;background:var(--card);}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+thead tr{background:#f9fafb;}
+th{padding:9px 10px;text-align:left;font-weight:500;color:var(--text2);white-space:nowrap;border-bottom:1px solid var(--border);background:#f9fafb;}
+td{padding:8px 10px;border-bottom:1px solid #f3f4f6;vertical-align:middle;white-space:nowrap;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#fafafa;}
+tr.closed-row td{opacity:0.5;}
+.chk{width:14px;height:14px;accent-color:var(--blue);cursor:pointer;}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:500;}
+.tag-yes{background:var(--green-l);color:#166534;}
+.tag-no{background:var(--gray-l);color:#374151;}
+.tag-partial{background:var(--amber-l);color:#92400e;}
+.tag-miss{background:var(--red-l);color:#991b1b;}
+.link-cell{color:var(--blue);cursor:pointer;font-weight:500;}
+.link-cell:hover{text-decoration:underline;}
+.empty-state{text-align:center;padding:48px;color:var(--text3);}
+.empty-state .ei{font-size:36px;margin-bottom:10px;}
+.act-col{white-space:nowrap;}
+
+/* ── Mobile Cards ── */
+.card-list{display:none;padding:8px 0;}
+.m-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px;}
+.m-card.closed-row{opacity:0.55;}
+.m-card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:8px;}
+.m-card-title{font-weight:600;font-size:14px;color:var(--blue);}
+.m-card-sub{font-size:12px;color:var(--text2);margin-top:2px;}
+.m-card-body{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;}
+.m-field{font-size:12px;}
+.m-field-label{color:var(--text3);font-size:11px;margin-bottom:1px;}
+.m-field-val{color:var(--text);font-weight:500;}
+.m-card-footer{display:flex;align-items:center;gap:8px;margin-top:12px;padding-top:10px;border-top:1px solid var(--gray-l);}
+.m-check-wrap{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);}
+
+/* ── Modal ── */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-start;justify-content:center;padding:20px 12px;overflow-y:auto;}
+.modal-bg.show{display:flex;}
+.modal{background:var(--card);border-radius:12px;border:1px solid var(--border);padding:20px;width:800px;max-width:100%;position:relative;margin-bottom:20px;}
+.modal h3{font-size:16px;font-weight:600;margin-bottom:14px;padding-right:30px;}
+.modal-close{position:absolute;top:14px;right:14px;font-size:20px;color:var(--text3);background:none;border:none;cursor:pointer;line-height:1;padding:4px;}
+.modal-close:hover{color:var(--text);}
+.sec-title{font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin:14px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--gray-l);}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:10px 16px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 16px;}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px 16px;}
+.field label{font-size:11px;color:var(--text2);display:block;margin-bottom:3px;}
+.field input,.field select,.field textarea{width:100%;padding:7px 9px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--card);color:var(--text);}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(26,86,219,0.1);}
+.field input.ro{background:#f9fafb;color:var(--text2);}
+.field textarea{resize:vertical;min-height:60px;font-family:inherit;}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--gray-l);}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:20px;right:20px;background:#111;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(8px);transition:all 0.25s;pointer-events:none;}
+.toast.show{opacity:1;transform:translateY(0);}
+.toast.ok{background:var(--green);}
+.toast.err{background:var(--red);}
+
+.page{display:none;}
+.page.active{display:block;}
+
+/* ════════════════════════════════
+   RESPONSIVE — Tablet (≤900px)
+════════════════════════════════ */
+@media(max-width:900px){
+  .g3{grid-template-columns:1fr 1fr;}
+  .g4{grid-template-columns:1fr 1fr;}
+}
+
+/* ════════════════════════════════
+   RESPONSIVE — Mobile (≤768px)
+════════════════════════════════ */
+@media(max-width:768px){
+  :root{--nav-w:240px;}
+
+  /* Sidebar slides in from left */
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.open{transform:translateX(0);}
+  .sidebar-overlay.open{display:block;}
+  .menu-toggle{display:flex;}
+  .main{margin-left:0;}
+
+  /* Topbar */
+  .topbar{padding:0 12px;}
+  .sync-status{display:none;}
+  .content{padding:12px;}
+
+  /* Toolbar: stack inputs */
+  .toolbar{gap:6px;}
+  .toolbar input{width:100%;flex:1 1 140px;}
+  .toolbar select{flex:1 1 100px;}
+
+  /* Stats: 2 cols */
+  .stat{min-width:0;flex:1 1 calc(50% - 5px);}
+
+  /* Hide desktop table, show mobile cards */
+  .tbl-wrap table{display:none;}
+  .card-list{display:block;}
+
+  /* Modal: full screen feel */
+  .modal-bg{padding:10px 8px;}
+  .modal{padding:16px 14px;border-radius:10px;}
+  .g2,.g3,.g4{grid-template-columns:1fr 1fr;}
+  .modal h3{font-size:15px;}
+  .modal-actions{flex-wrap:wrap;}
+  .modal-actions .btn{flex:1;justify-content:center;}
+}
+
+@media(max-width:480px){
+  .g2,.g3,.g4{grid-template-columns:1fr;}
+  .stats .stat{flex:1 1 calc(50% - 5px);}
+}
 </style>
 </head>
 <body>
 
-<header>
-  <h1>📦 訂單管理系統</h1>
-  <div class="user-info" id="syncStatus">⏳ 連線中...</div>
-</header>
+<!-- Overlay for mobile sidebar -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
+<!-- ── Sidebar ── -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <h1>業務管理系統</h1>
+    <p>Business Management</p>
+  </div>
+  <nav class="nav-section">
+    <div class="nav-label">主選單</div>
+    <div class="nav-item active" onclick="switchPage('orders',this)">
+      <span class="icon">📋</span> 訂單管理
+      <span class="nbadge" id="nav-badge-orders">0</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('purchase',this)">
+      <span class="icon">🛒</span> 請購管理
+      <span class="nbadge" id="nav-badge-purchase">0</span>
+    </div>
+    <div class="nav-item" onclick="switchPage('service',this)">
+      <span class="icon">🔧</span> 服務紀錄
+    </div>
+    <div class="nav-item" onclick="switchPage('inventory',this)">
+      <span class="icon">📦</span> 現有庫存
+    </div>
+  </nav>
+  <div class="sidebar-footer">v2.1 · Google Sheets 串接</div>
+</aside>
+
+<!-- ── Main ── -->
 <div class="main">
-  <div class="toolbar">
-    <input type="text" id="searchBox" placeholder="搜尋訂單號、客戶、產品..." oninput="render()">
-    <select id="filterStatus" onchange="render()">
-      <option value="">全部狀態</option>
-      <option value="待出貨">待出貨</option>
-      <option value="部分出貨">部分出貨</option>
-      <option value="已出清">已出清</option>
-    </select>
-    <select id="filterSales" onchange="render()">
-      <option value="">全部業務</option>
-    </select>
-    <button class="btn primary" onclick="openModal()">＋ 新增訂單</button>
-    <button class="btn success" onclick="syncData()">⟳ 同步資料</button>
-    <button class="btn" onclick="exportCSV()">↓ 匯出 CSV</button>
-  </div>
-
-  <div class="summary-bar" id="summaryBar"></div>
-
-  <div class="tabs">
-    <button class="tab active" id="tab-active" onclick="switchTab('active')">進行中訂單 <span class="badge badge-blue" id="cnt-active">0</span></button>
-    <button class="tab" id="tab-closed" onclick="switchTab('closed')">已結案訂單 <span class="badge badge-gray" id="cnt-closed">0</span></button>
-  </div>
-
-  <div class="tbl-wrap">
-    <div id="tblContent">
-      <div class="loading"><div class="spinner"></div><br>載入中...</div>
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+      <div class="topbar-title" id="pageTitle">訂單管理</div>
     </div>
+    <div class="topbar-right">
+      <span class="sync-status" id="syncStatus">⏳ 連線中...</span>
+      <button class="btn success" onclick="syncAll()">⟳ 同步</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══ 訂單管理 ══ -->
+    <div class="page active" id="page-orders">
+      <div class="toolbar">
+        <input type="text" id="ord-search" placeholder="搜尋訂單號、客戶、產品..." oninput="renderOrders()">
+        <select id="ord-status" onchange="renderOrders()">
+          <option value="">全部狀態</option>
+          <option>待出貨</option><option>部分出貨</option><option>已出清</option>
+        </select>
+        <select id="ord-sales" onchange="renderOrders()"><option value="">全部業務</option></select>
+        <button class="btn primary" onclick="openModal('order')">＋ 新增</button>
+        <button class="btn" onclick="exportCSV('orders')">↓ 匯出</button>
+      </div>
+      <div class="stats" id="ord-stats"></div>
+      <div class="tabs">
+        <button class="tab active" id="ord-tab-active" onclick="ordTab('active')">進行中 <span class="badge-tab bt-blue" id="ord-cnt-a">0</span></button>
+        <button class="tab" id="ord-tab-closed" onclick="ordTab('closed')">已結案 <span class="badge-tab bt-gray" id="ord-cnt-c">0</span></button>
+      </div>
+      <div class="tbl-wrap"><div id="ord-table"></div></div>
+      <div class="card-list" id="ord-cards"></div>
+    </div>
+
+    <!-- ══ 請購管理 ══ -->
+    <div class="page" id="page-purchase">
+      <div class="toolbar">
+        <input type="text" id="pur-search" placeholder="搜尋請購單號、廠商..." oninput="renderPurchase()">
+        <select id="pur-year" onchange="renderPurchase()"><option value="">全部年份</option></select>
+        <select id="pur-type" onchange="renderPurchase()">
+          <option value="">國內外</option><option>國內</option><option>國外</option>
+        </select>
+        <button class="btn primary" onclick="openModal('purchase')">＋ 新增</button>
+        <button class="btn" onclick="exportCSV('purchase')">↓ 匯出</button>
+      </div>
+      <div class="stats" id="pur-stats"></div>
+      <div class="tabs">
+        <button class="tab active" id="pur-tab-active" onclick="purTab('active')">待入料 <span class="badge-tab bt-blue" id="pur-cnt-a">0</span></button>
+        <button class="tab" id="pur-tab-done" onclick="purTab('done')">已入料 <span class="badge-tab bt-gray" id="pur-cnt-d">0</span></button>
+      </div>
+      <div class="tbl-wrap"><div id="pur-table"></div></div>
+      <div class="card-list" id="pur-cards"></div>
+    </div>
+
+    <!-- ══ 服務紀錄 ══ -->
+    <div class="page" id="page-service">
+      <div class="toolbar">
+        <input type="text" id="svc-search" placeholder="搜尋客戶、單號、主旨..." oninput="renderService()">
+        <select id="svc-month" onchange="renderService()">
+          <option value="">全部月份</option>
+          <option>1</option><option>2</option><option>3</option><option>4</option>
+          <option>5</option><option>6</option><option>7</option><option>8</option>
+          <option>9</option><option>10</option><option>11</option><option>12</option>
+        </select>
+        <select id="svc-sales" onchange="renderService()"><option value="">全部業務</option></select>
+        <button class="btn primary" onclick="openModal('service')">＋ 新增</button>
+        <button class="btn" onclick="exportCSV('service')">↓ 匯出</button>
+      </div>
+      <div class="stats" id="svc-stats"></div>
+      <div class="tbl-wrap"><div id="svc-table"></div></div>
+      <div class="card-list" id="svc-cards"></div>
+    </div>
+
+    <!-- ══ 現有庫存 ══ -->
+    <div class="page" id="page-inventory">
+      <div class="toolbar">
+        <input type="text" id="inv-search" placeholder="搜尋項目號碼、說明..." oninput="renderInventory()">
+        <select id="inv-warehouse" onchange="renderInventory()"><option value="">全部倉庫</option></select>
+        <button class="btn primary" onclick="openModal('inventory')">＋ 新增</button>
+        <button class="btn" onclick="exportCSV('inventory')">↓ 匯出</button>
+      </div>
+      <div class="stats" id="inv-stats"></div>
+      <div class="tbl-wrap"><div id="inv-table"></div></div>
+      <div class="card-list" id="inv-cards"></div>
+    </div>
+
   </div>
 </div>
 
-<!-- 新增/編輯 Modal -->
-<div class="modal-bg" id="modalBg">
+<!-- ══ Modal：訂單 ══ -->
+<div class="modal-bg" id="modal-order">
 <div class="modal">
-  <button class="close-btn" onclick="closeModal()">✕</button>
-  <h3 id="modalTitle">新增訂單</h3>
-
+  <button class="modal-close" onclick="closeModal('order')">✕</button>
+  <h3 id="modal-order-title">新增訂單</h3>
   <div class="sec-title">基本資訊</div>
-  <div class="grid3">
-    <div class="field"><label>訂購單號 *</label><input id="f_no" placeholder="SO-2024-001"></div>
-    <div class="field"><label>業務代號</label><input id="f_sales_code" placeholder="S01"></div>
-    <div class="field"><label>業務姓名</label><input id="f_sales_name" placeholder="王小明"></div>
-    <div class="field"><label>客戶簡稱 *</label><input id="f_customer" placeholder="台積電"></div>
-    <div class="field"><label>客戶訂單號</label><input id="f_cust_order" placeholder="PO-8888"></div>
-    <div class="field"><label>來源單號</label><input id="f_source_no" placeholder="QT-001"></div>
+  <div class="g3">
+    <div class="field"><label>訂購單號 *</label><input id="o_no"></div>
+    <div class="field"><label>業務代號</label><input id="o_sales_code"></div>
+    <div class="field"><label>業務姓名</label><input id="o_sales_name"></div>
+    <div class="field"><label>客戶簡稱 *</label><input id="o_customer"></div>
+    <div class="field"><label>客戶訂單號</label><input id="o_cust_order"></div>
+    <div class="field"><label>來源單號</label><input id="o_source_no"></div>
   </div>
-  <div class="grid3" style="margin-top:10px;">
-    <div class="field"><label>訂購日期</label><input type="date" id="f_order_date"></div>
-    <div class="field"><label>預交日期</label><input type="date" id="f_delivery_date"></div>
-    <div class="field"><label>更新預交日</label><input type="date" id="f_new_delivery_date"></div>
+  <div class="g3" style="margin-top:8px;">
+    <div class="field"><label>訂購日期</label><input type="date" id="o_order_date"></div>
+    <div class="field"><label>預交日期</label><input type="date" id="o_delivery_date"></div>
+    <div class="field"><label>更新預交日</label><input type="date" id="o_new_delivery_date"></div>
   </div>
-
   <div class="sec-title">產品明細</div>
-  <div class="grid3">
-    <div class="field"><label>欄號</label><input id="f_col" placeholder="001"></div>
-    <div class="field"><label>產品編號</label><input id="f_prod_no" placeholder="P-12345"></div>
-    <div class="field"><label>品名規格 *</label><input id="f_prod_name" placeholder="精密電阻 0402 10K"></div>
-    <div class="field"><label>數量</label><input type="number" id="f_qty" placeholder="0" oninput="calcAmt()"></div>
-    <div class="field"><label>已出數量</label><input type="number" id="f_shipped" placeholder="0" oninput="calcAmt()"></div>
-    <div class="field"><label>現有庫存數量</label><input type="number" id="f_stock" placeholder="0"></div>
+  <div class="g3">
+    <div class="field"><label>欄號</label><input id="o_col"></div>
+    <div class="field"><label>產品編號</label><input id="o_prod_no"></div>
+    <div class="field"><label>品名規格 *</label><input id="o_prod_name"></div>
+    <div class="field"><label>數量</label><input type="number" id="o_qty" oninput="oCalc()"></div>
+    <div class="field"><label>已出數量</label><input type="number" id="o_shipped" oninput="oCalc()"></div>
+    <div class="field"><label>現有庫存</label><input type="number" id="o_stock"></div>
   </div>
-
   <div class="sec-title">金額資訊</div>
-  <div class="grid3">
-    <div class="field"><label>使用幣別</label>
-      <select id="f_currency" onchange="calcAmt()">
-        <option>TWD</option><option>USD</option><option>EUR</option><option>JPY</option><option>CNY</option>
-      </select>
-    </div>
-    <div class="field"><label>匯率</label><input type="number" id="f_rate" value="1" step="0.01" oninput="calcAmt()"></div>
-    <div class="field"><label>是否含稅</label>
-      <select id="f_tax"><option value="是">是</option><option value="否">否</option></select>
-    </div>
-    <div class="field"><label>單價</label><input type="number" id="f_price" placeholder="0.00" step="0.01" oninput="calcAmt()"></div>
-    <div class="field"><label>金額（自動計算）</label><input id="f_amount" class="readonly" readonly></div>
-    <div class="field"><label>未出金額（自動計算）</label><input id="f_unship_amt" class="readonly" readonly></div>
-    <div class="field"><label>未出本幣金額（自動計算）</label><input id="f_unship_local" class="readonly" readonly></div>
+  <div class="g4">
+    <div class="field"><label>幣別</label><select id="o_currency" onchange="oCalc()"><option>TWD</option><option>USD</option><option>EUR</option><option>JPY</option><option>CNY</option></select></div>
+    <div class="field"><label>匯率</label><input type="number" id="o_rate" value="1" step="0.01" oninput="oCalc()"></div>
+    <div class="field"><label>含稅</label><select id="o_tax"><option>是</option><option>否</option></select></div>
+    <div class="field"><label>單價</label><input type="number" id="o_price" step="0.01" oninput="oCalc()"></div>
+    <div class="field"><label>金額</label><input class="ro" id="o_amount" readonly></div>
+    <div class="field"><label>未出金額</label><input class="ro" id="o_unship_amt" readonly></div>
+    <div class="field"><label>未出本幣金額</label><input class="ro" id="o_unship_local" readonly></div>
   </div>
-
-  <div class="sec-title">其他資訊</div>
-  <div class="grid2">
-    <div class="field"><label>入料狀況</label>
-      <select id="f_material">
-        <option>待確認</option><option>已備料</option><option>部分入料</option><option>缺料</option>
-      </select>
-    </div>
-    <div class="field"><label>已轉採購建議</label>
-      <select id="f_purchase"><option value="否">否</option><option value="是">是</option></select>
-    </div>
-    <div class="field"><label>細項描述</label><textarea id="f_desc" placeholder="詳細說明..."></textarea></div>
-    <div class="field"><label>分錄備註</label><textarea id="f_note" placeholder="備註..."></textarea></div>
+  <div class="sec-title">採購資訊</div>
+  <div class="g3">
+    <div class="field"><label>已轉採購建議</label><select id="o_purchase"><option value="否">否</option><option value="是">是</option></select></div>
+    <div class="field"><label>請購單號</label><input id="o_purchase_no" placeholder="PR-2024-001"></div>
+    <div class="field"><label>入料狀況</label><select id="o_material"><option>待確認</option><option>已備料</option><option>部分入料</option><option>缺料</option></select></div>
   </div>
-
+  <div class="sec-title">其他</div>
+  <div class="g2">
+    <div class="field"><label>細項描述</label><textarea id="o_desc"></textarea></div>
+    <div class="field"><label>分錄備註</label><textarea id="o_note"></textarea></div>
+  </div>
   <div class="modal-actions">
-    <button class="btn" onclick="closeModal()">取消</button>
-    <button class="btn primary" onclick="saveOrder()">💾 儲存</button>
+    <button class="btn" onclick="closeModal('order')">取消</button>
+    <button class="btn primary" onclick="saveRecord('order')">💾 儲存</button>
   </div>
 </div>
 </div>
 
-<!-- Toast -->
+<!-- ══ Modal：請購 ══ -->
+<div class="modal-bg" id="modal-purchase">
+<div class="modal">
+  <button class="modal-close" onclick="closeModal('purchase')">✕</button>
+  <h3 id="modal-purchase-title">新增請購單</h3>
+  <div class="sec-title">基本資訊</div>
+  <div class="g4">
+    <div class="field"><label>年份</label><input id="p_year" placeholder="2024"></div>
+    <div class="field"><label>國內外</label><select id="p_type"><option>國內</option><option>國外</option></select></div>
+    <div class="field"><label>請購單號 *</label><input id="p_no"></div>
+    <div class="field"><label>業務</label><input id="p_sales"></div>
+  </div>
+  <div class="g3" style="margin-top:8px;">
+    <div class="field"><label>請購廠商</label><input id="p_vendor"></div>
+    <div class="field"><label>廠商報價編號</label><input id="p_vendor_quote"></div>
+    <div class="field"><label>客戶訂單編號</label><input id="p_cust_order"></div>
+  </div>
+  <div class="sec-title">產品資訊</div>
+  <div class="g3">
+    <div class="field"><label>產品編號</label><input id="p_prod_no"></div>
+    <div class="field"><label>品名規格 *</label><input id="p_prod_name"></div>
+    <div class="field"><label>採購數量</label><input type="number" id="p_qty" oninput="pCalc()"></div>
+  </div>
+  <div class="sec-title">費用資訊</div>
+  <div class="g4">
+    <div class="field"><label>採購單價</label><input type="number" id="p_price" step="0.01" oninput="pCalc()"></div>
+    <div class="field"><label>出口運費</label><input type="number" id="p_export_freight" step="0.01" oninput="pCalc()"></div>
+    <div class="field"><label>進口運費</label><input type="number" id="p_import_freight" step="0.01" oninput="pCalc()"></div>
+    <div class="field"><label>總成本（自動）</label><input class="ro" id="p_total_cost" readonly></div>
+  </div>
+  <div class="sec-title">其他</div>
+  <div class="g2">
+    <div class="field"><label>入料時間</label><input type="date" id="p_arrival_date"></div>
+    <div class="field"><label>備註</label><textarea id="p_note" style="min-height:38px;"></textarea></div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn" onclick="closeModal('purchase')">取消</button>
+    <button class="btn primary" onclick="saveRecord('purchase')">💾 儲存</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ Modal：服務紀錄 ══ -->
+<div class="modal-bg" id="modal-service">
+<div class="modal" style="width:640px;">
+  <button class="modal-close" onclick="closeModal('service')">✕</button>
+  <h3 id="modal-service-title">新增服務紀錄</h3>
+  <div class="g4">
+    <div class="field"><label>月份</label><select id="s_month"><option value="">選擇</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option></select></div>
+    <div class="field"><label>日期</label><input type="date" id="s_date"></div>
+    <div class="field"><label>單號</label><input id="s_no"></div>
+    <div class="field"><label>客戶簡稱</label><input id="s_customer"></div>
+  </div>
+  <div class="g3" style="margin-top:8px;">
+    <div class="field"><label>主旨明細</label><input id="s_subject"></div>
+    <div class="field"><label>業務人員</label><input id="s_sales"></div>
+    <div class="field"><label>訂單編號</label><input id="s_order_no"></div>
+  </div>
+  <div class="field" style="margin-top:8px;"><label>備註</label><textarea id="s_note" style="min-height:60px;"></textarea></div>
+  <div class="modal-actions">
+    <button class="btn" onclick="closeModal('service')">取消</button>
+    <button class="btn primary" onclick="saveRecord('service')">💾 儲存</button>
+  </div>
+</div>
+</div>
+
+<!-- ══ Modal：庫存 ══ -->
+<div class="modal-bg" id="modal-inventory">
+<div class="modal" style="width:560px;">
+  <button class="modal-close" onclick="closeModal('inventory')">✕</button>
+  <h3 id="modal-inventory-title">新增庫存項目</h3>
+  <div class="g2">
+    <div class="field"><label>項目號碼 *</label><input id="i_no"></div>
+    <div class="field"><label>項目說明 *</label><input id="i_desc"></div>
+    <div class="field"><label>倉庫代碼</label><input id="i_warehouse"></div>
+    <div class="field"><label>最後進貨日</label><input type="date" id="i_last_date"></div>
+  </div>
+  <div class="g3" style="margin-top:8px;">
+    <div class="field"><label>庫存量</label><input type="number" id="i_qty" oninput="iCalc()"></div>
+    <div class="field"><label>單價</label><input type="number" id="i_price" step="0.01" oninput="iCalc()"></div>
+    <div class="field"><label>合計（自動）</label><input class="ro" id="i_total" readonly></div>
+  </div>
+  <div class="modal-actions">
+    <button class="btn" onclick="closeModal('inventory')">取消</button>
+    <button class="btn primary" onclick="saveRecord('inventory')">💾 儲存</button>
+  </div>
+</div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // ============================================================
-//  設定區：填入你的 Google Apps Script 網址
+const SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_URL_HERE';
+const API_TOKEN  = 'YOUR_SECRET_TOKEN_HERE';
 // ============================================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec';
-// ============================================================
 
-let orders = [];
-let editId = null;
-let activeTab = 'active';
-let isSaving = false;
+let db = {orders:[],purchase:[],service:[],inventory:[]};
+let editState = {order:null,purchase:null,service:null,inventory:null};
+let ordActiveTab = 'active', purActiveTab = 'active';
+let currentPage = 'orders';
 
-// ---- 工具函式 ----
-function showToast(msg, type='success'){
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.className = 'toast show ' + type;
-  setTimeout(()=>{ t.className='toast'; }, 3000);
+// ── Sidebar mobile ──
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('sidebarOverlay').classList.toggle('open');
+}
+function closeSidebar(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('sidebarOverlay').classList.remove('open');
 }
 
-function calcAmt(){
-  const qty = parseFloat(document.getElementById('f_qty').value)||0;
-  const shipped = parseFloat(document.getElementById('f_shipped').value)||0;
-  const price = parseFloat(document.getElementById('f_price').value)||0;
-  const rate = parseFloat(document.getElementById('f_rate').value)||1;
-  const unship = Math.max(0, qty - shipped);
-  document.getElementById('f_amount').value = (qty*price).toFixed(2);
-  document.getElementById('f_unship_amt').value = (unship*price).toFixed(2);
-  document.getElementById('f_unship_local').value = (unship*price*rate).toFixed(2);
+// ── Toast ──
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.className='toast show '+type;
+  setTimeout(()=>{el.className='toast';},3000);
 }
 
-function calcFields(o){
-  o.qty = parseFloat(o.qty)||0;
-  o.shipped = parseFloat(o.shipped)||0;
-  o.stock = parseFloat(o.stock)||0;
-  o.price = parseFloat(o.price)||0;
-  o.rate = parseFloat(o.rate)||1;
-  o.unshipped = Math.max(0, o.qty - o.shipped);
-  o.amount = o.qty * o.price;
-  o.unship_amt = o.unshipped * o.price;
-  o.unship_local = o.unship_amt * o.rate;
-  o.status = o.unshipped === 0 ? '已出清' : o.shipped > 0 ? '部分出貨' : '待出貨';
-  o.closed = o.closed === true || o.closed === 'TRUE' || o.closed === '1';
-  return o;
+// ── Page switch ──
+function switchPage(page,el){
+  currentPage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  el.classList.add('active');
+  const titles={orders:'訂單管理',purchase:'請購管理',service:'服務紀錄',inventory:'現有庫存'};
+  document.getElementById('pageTitle').textContent=titles[page];
+  closeSidebar();
+  if(page==='orders') renderOrders();
+  if(page==='purchase') renderPurchase();
+  if(page==='service') renderService();
+  if(page==='inventory') renderInventory();
 }
 
-// ---- API 呼叫 ----
-async function apiCall(action, data={}){
-  const body = { action, ...data };
-  const resp = await fetch(SCRIPT_URL, {
-    method:'POST',
-    body: JSON.stringify(body)
-  });
-  const json = await resp.json();
-  if(!json.success) throw new Error(json.error||'未知錯誤');
-  return json;
+// ── API ──
+async function apiCall(action,data={}){
+  if(SCRIPT_URL==='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE') throw new Error('demo');
+  const r=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action,token:API_TOKEN,...data})});
+  const j=await r.json();
+  if(!j.success) throw new Error(j.error||'error');
+  return j;
 }
 
-async function syncData(){
-  document.getElementById('syncStatus').textContent = '⏳ 同步中...';
-  try {
-    if(SCRIPT_URL === 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec'){
-      // Demo 模式：載入範例資料
-      orders = getDemoData();
-      orders.forEach(calcFields);
-      document.getElementById('syncStatus').textContent = '⚠️ Demo 模式（尚未設定 Script URL）';
-      render();
-      return;
-    }
-    const res = await apiCall('getAll');
-    orders = (res.data||[]).map(calcFields);
-    document.getElementById('syncStatus').textContent = '✅ 已同步 ' + new Date().toLocaleTimeString('zh-TW');
-    showToast('資料已同步');
-    render();
-  } catch(e) {
-    document.getElementById('syncStatus').textContent = '❌ 同步失敗';
-    showToast('同步失敗：' + e.message, 'error');
-    // 載入 Demo 資料
-    orders = getDemoData();
-    orders.forEach(calcFields);
-    render();
+async function syncAll(){
+  document.getElementById('syncStatus').textContent='⏳ 同步中...';
+  try{
+    const res=await apiCall('getAll');
+    db=res.data||db;
+    ['orders','purchase','service','inventory'].forEach(k=>{if(db[k])db[k].forEach(o=>calcFields(k,o));});
+    document.getElementById('syncStatus').textContent='✅ '+new Date().toLocaleTimeString('zh-TW');
+    toast('資料已同步');
+  }catch(e){
+    document.getElementById('syncStatus').textContent='⚠️ Demo 模式';
+    db=getDemoData();
+    ['orders','purchase','service','inventory'].forEach(k=>db[k].forEach(o=>calcFields(k,o)));
   }
+  updateNavBadges();
+  renderOrders(); renderPurchase(); renderService(); renderInventory();
 }
 
-// ---- 頁面切換 ----
-function switchTab(tab){
-  activeTab = tab;
-  document.getElementById('tab-active').className = 'tab' + (tab==='active'?' active':'');
-  document.getElementById('tab-closed').className = 'tab' + (tab==='closed'?' active':'');
-  render();
+function updateNavBadges(){
+  document.getElementById('nav-badge-orders').textContent=db.orders.filter(o=>!o.closed).length;
+  document.getElementById('nav-badge-purchase').textContent=db.purchase.filter(p=>!p.done).length;
 }
 
-// ---- 渲染 ----
-function render(){
-  const search = document.getElementById('searchBox').value.toLowerCase();
-  const fStatus = document.getElementById('filterStatus').value;
-  const fSales = document.getElementById('filterSales').value;
+// ── Calc ──
+function calcFields(type,o){
+  if(type==='orders'){
+    o.qty=+o.qty||0; o.shipped=+o.shipped||0; o.stock=+o.stock||0;
+    o.price=+o.price||0; o.rate=+o.rate||1;
+    o.unshipped=Math.max(0,o.qty-o.shipped);
+    o.amount=o.qty*o.price; o.unship_amt=o.unshipped*o.price; o.unship_local=o.unship_amt*o.rate;
+    o.status=o.unshipped===0?'已出清':o.shipped>0?'部分出貨':'待出貨';
+    o.closed=o.closed===true||o.closed==='TRUE'||o.closed==='1';
+  }
+  if(type==='purchase'){
+    o.qty=+o.qty||0; o.price=+o.price||0;
+    o.export_freight=+o.export_freight||0; o.import_freight=+o.import_freight||0;
+    o.total_cost=(o.qty*o.price)+o.export_freight+o.import_freight;
+    o.done=o.done===true||o.done==='TRUE'||o.done==='1';
+  }
+  if(type==='inventory'){o.qty=+o.qty||0; o.price=+o.price||0; o.total=o.qty*o.price;}
+}
+function oCalc(){
+  const qty=+document.getElementById('o_qty').value||0;
+  const sh=+document.getElementById('o_shipped').value||0;
+  const pr=+document.getElementById('o_price').value||0;
+  const ra=+document.getElementById('o_rate').value||1;
+  const u=Math.max(0,qty-sh);
+  document.getElementById('o_amount').value=(qty*pr).toFixed(2);
+  document.getElementById('o_unship_amt').value=(u*pr).toFixed(2);
+  document.getElementById('o_unship_local').value=(u*pr*ra).toFixed(2);
+}
+function pCalc(){
+  const qty=+document.getElementById('p_qty').value||0;
+  const pr=+document.getElementById('p_price').value||0;
+  const ef=+document.getElementById('p_export_freight').value||0;
+  const im=+document.getElementById('p_import_freight').value||0;
+  document.getElementById('p_total_cost').value=((qty*pr)+ef+im).toFixed(2);
+}
+function iCalc(){
+  document.getElementById('i_total').value=((+document.getElementById('i_qty').value||0)*(+document.getElementById('i_price').value||0)).toFixed(2);
+}
 
-  // 更新業務篩選
-  const salesSet = [...new Set(orders.map(o=>o.sales_name).filter(Boolean))];
-  const sel = document.getElementById('filterSales');
-  const curSales = sel.value;
-  sel.innerHTML = '<option value="">全部業務</option>' + salesSet.map(s=>`<option${s===curSales?' selected':''}>${s}</option>`).join('');
+// ── Modal ──
+function openModal(type,id=null){
+  editState[type]=id;
+  const titles={order:'新增訂單',purchase:'新增請購單',service:'新增服務紀錄',inventory:'新增庫存項目'};
+  document.getElementById('modal-'+type+'-title').textContent=id?('編輯 — '+type):titles[type];
+  const dbKey=type==='order'?'orders':type==='inventory'?'inventory':type;
+  const rec=id?(db[dbKey]||[]).find(x=>String(x.id)===String(id)):null;
+  if(type==='order'){
+    ['no','sales_code','sales_name','customer','cust_order','source_no','order_date','delivery_date','new_delivery_date','col','prod_no','prod_name','qty','shipped','stock','currency','rate','tax','price','desc','note','material','purchase','purchase_no'].forEach(f=>{const el=document.getElementById('o_'+f);if(el)el.value=rec?rec[f]||'':'';});
+    if(!rec){document.getElementById('o_rate').value='1';document.getElementById('o_order_date').value=new Date().toISOString().split('T')[0];}
+    document.getElementById('o_amount').value=rec?rec.amount?.toFixed(2)||'':'';
+    document.getElementById('o_unship_amt').value=rec?rec.unship_amt?.toFixed(2)||'':'';
+    document.getElementById('o_unship_local').value=rec?Math.round(rec.unship_local||0):'';
+  }
+  if(type==='purchase'){
+    ['year','type','no','sales','vendor','vendor_quote','cust_order','prod_no','prod_name','qty','price','export_freight','import_freight','arrival_date','note'].forEach(f=>{const el=document.getElementById('p_'+f);if(el)el.value=rec?rec[f]||'':'';});
+    document.getElementById('p_total_cost').value=rec?rec.total_cost?.toFixed(2)||'':'';
+  }
+  if(type==='service'){
+    ['month','date','no','customer','subject','sales','order_no','note'].forEach(f=>{const el=document.getElementById('s_'+f);if(el)el.value=rec?rec[f]||'':'';});
+  }
+  if(type==='inventory'){
+    ['no','desc','warehouse','qty','price','last_date'].forEach(f=>{const el=document.getElementById('i_'+f);if(el)el.value=rec?rec[f]||'':'';});
+    document.getElementById('i_total').value=rec?rec.total?.toFixed(2)||'':'';
+  }
+  document.getElementById('modal-'+type).classList.add('show');
+}
+function closeModal(type){document.getElementById('modal-'+type).classList.remove('show');}
 
-  const active = orders.filter(o=>!o.closed);
-  const closed = orders.filter(o=>o.closed);
-  document.getElementById('cnt-active').textContent = active.length;
-  document.getElementById('cnt-closed').textContent = closed.length;
+async function saveRecord(type){
+  const g=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
+  let rec={};
+  const dbKey=type==='order'?'orders':type==='inventory'?'inventory':type;
+  if(type==='order'){
+    if(!g('o_no')||!g('o_customer')||!g('o_prod_name')){toast('請填必填欄位','err');return;}
+    rec={no:g('o_no'),sales_code:g('o_sales_code'),sales_name:g('o_sales_name'),customer:g('o_customer'),cust_order:g('o_cust_order'),source_no:g('o_source_no'),order_date:g('o_order_date'),delivery_date:g('o_delivery_date'),new_delivery_date:g('o_new_delivery_date'),col:g('o_col'),prod_no:g('o_prod_no'),prod_name:g('o_prod_name'),qty:+g('o_qty')||0,shipped:+g('o_shipped')||0,stock:+g('o_stock')||0,currency:g('o_currency'),rate:+g('o_rate')||1,tax:g('o_tax'),price:+g('o_price')||0,desc:g('o_desc'),note:g('o_note'),material:g('o_material'),purchase:g('o_purchase'),purchase_no:g('o_purchase_no'),closed:editState[type]?(db.orders.find(x=>String(x.id)===String(editState[type]))?.closed||false):false};
+  }
+  if(type==='purchase'){
+    if(!g('p_no')||!g('p_prod_name')){toast('請填必填欄位','err');return;}
+    rec={year:g('p_year'),type:g('p_type'),no:g('p_no'),sales:g('p_sales'),vendor:g('p_vendor'),vendor_quote:g('p_vendor_quote'),cust_order:g('p_cust_order'),prod_no:g('p_prod_no'),prod_name:g('p_prod_name'),qty:+g('p_qty')||0,price:+g('p_price')||0,export_freight:+g('p_export_freight')||0,import_freight:+g('p_import_freight')||0,arrival_date:g('p_arrival_date'),note:g('p_note'),done:editState[type]?(db.purchase.find(x=>String(x.id)===String(editState[type]))?.done||false):false};
+  }
+  if(type==='service'){
+    if(!g('s_customer')){toast('請填客戶簡稱','err');return;}
+    rec={month:g('s_month'),date:g('s_date'),no:g('s_no'),customer:g('s_customer'),subject:g('s_subject'),sales:g('s_sales'),order_no:g('s_order_no'),note:g('s_note')};
+  }
+  if(type==='inventory'){
+    if(!g('i_no')||!g('i_desc')){toast('請填必填欄位','err');return;}
+    rec={no:g('i_no'),desc:g('i_desc'),warehouse:g('i_warehouse'),qty:+g('i_qty')||0,price:+g('i_price')||0,last_date:g('i_last_date')};
+  }
+  calcFields(type==='order'?'orders':type,rec);
+  const id=editState[type];
+  if(id){const idx=db[dbKey].findIndex(x=>String(x.id)===String(id));if(idx>=0){rec.id=id;db[dbKey][idx]=rec;}}
+  else{rec.id='L'+Date.now();db[dbKey].push(rec);}
+  try{if(SCRIPT_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE')await apiCall(id?'update':'add',{module:dbKey,id,data:rec});}catch(e){}
+  toast(id?'已更新':'已新增'); closeModal(type); updateNavBadges();
+  if(type==='order')renderOrders();
+  if(type==='purchase')renderPurchase();
+  if(type==='service')renderService();
+  if(type==='inventory')renderInventory();
+}
 
-  const list = (activeTab==='active' ? active : closed).filter(o=>{
-    if(search && ![o.no,o.customer,o.prod_name,o.prod_no,o.sales_name].some(v=>v&&v.toLowerCase().includes(search))) return false;
-    if(fStatus && o.status!==fStatus) return false;
-    if(fSales && o.sales_name!==fSales) return false;
+async function toggleStatus(type,id){
+  const dbKey=type==='order'?'orders':'purchase';
+  const key=type==='order'?'closed':'done';
+  const o=db[dbKey].find(x=>String(x.id)===String(id));
+  if(!o)return;
+  o[key]=!o[key];
+  try{if(SCRIPT_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE')await apiCall('update',{module:dbKey,id,data:o});}catch(e){}
+  toast(o[key]?(type==='order'?'已結案':'已入料'):(type==='order'?'恢復進行中':'恢復待入料'));
+  updateNavBadges();
+  if(type==='order')renderOrders(); else renderPurchase();
+}
+
+async function delRecord(type,id){
+  if(!confirm('確定要刪除？'))return;
+  const dbKey=type==='order'?'orders':type==='inventory'?'inventory':type;
+  db[dbKey]=db[dbKey].filter(x=>String(x.id)!==String(id));
+  try{if(SCRIPT_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE')await apiCall('delete',{module:dbKey,id});}catch(e){}
+  toast('已刪除'); updateNavBadges();
+  if(type==='order')renderOrders();
+  if(type==='purchase')renderPurchase();
+  if(type==='service')renderService();
+  if(type==='inventory')renderInventory();
+}
+
+// ── 訂單渲染 ──
+function ordTab(t){ordActiveTab=t;document.getElementById('ord-tab-active').className='tab'+(t==='active'?' active':'');document.getElementById('ord-tab-closed').className='tab'+(t==='closed'?' active':'');renderOrders();}
+
+function matTag(m){const map={'已備料':'tag-yes','缺料':'tag-miss','部分入料':'tag-partial','待確認':'tag-no'};return `<span class="tag ${map[m]||'tag-no'}">${m||'待確認'}</span>`;}
+
+function renderOrders(){
+  const search=document.getElementById('ord-search').value.toLowerCase();
+  const fStatus=document.getElementById('ord-status').value;
+  const fSales=document.getElementById('ord-sales').value;
+  const salesSet=[...new Set(db.orders.map(o=>o.sales_name).filter(Boolean))];
+  const sel=document.getElementById('ord-sales');const cur=sel.value;
+  sel.innerHTML='<option value="">全部業務</option>'+salesSet.map(s=>`<option${s===cur?' selected':''}>${s}</option>`).join('');
+  const active=db.orders.filter(o=>!o.closed),closed=db.orders.filter(o=>o.closed);
+  document.getElementById('ord-cnt-a').textContent=active.length;
+  document.getElementById('ord-cnt-c').textContent=closed.length;
+  const list=(ordActiveTab==='active'?active:closed).filter(o=>{
+    if(search&&![o.no,o.customer,o.prod_name,o.prod_no,o.sales_name].some(v=>v&&v.toLowerCase().includes(search)))return false;
+    if(fStatus&&o.status!==fStatus)return false;
+    if(fSales&&o.sales_name!==fSales)return false;
     return true;
   });
-
-  // Summary
-  const totalAmt = list.reduce((s,o)=>s+o.unship_local,0);
-  const totalQty = list.reduce((s,o)=>s+o.qty,0);
-  const countLow = list.filter(o=>o.material==='缺料').length;
-  document.getElementById('summaryBar').innerHTML = `
+  document.getElementById('ord-stats').innerHTML=`
     <div class="stat"><div class="stat-label">訂單筆數</div><div class="stat-val blue">${list.length}</div></div>
-    <div class="stat"><div class="stat-label">總訂購數量</div><div class="stat-val">${totalQty.toLocaleString()}</div></div>
-    <div class="stat"><div class="stat-label">未出本幣金額</div><div class="stat-val green">${Math.round(totalAmt).toLocaleString()}</div></div>
-    <div class="stat"><div class="stat-label">缺料筆數</div><div class="stat-val amber">${countLow}</div></div>
-  `;
-
-  if(list.length===0){
-    document.getElementById('tblContent').innerHTML = `<div class="empty"><div class="empty-icon">📋</div><p>沒有符合條件的訂單</p></div>`;
-    return;
+    <div class="stat"><div class="stat-label">總數量</div><div class="stat-val">${list.reduce((s,o)=>s+o.qty,0).toLocaleString()}</div></div>
+    <div class="stat"><div class="stat-label">未出本幣</div><div class="stat-val green">${Math.round(list.reduce((s,o)=>s+o.unship_local,0)).toLocaleString()}</div></div>
+    <div class="stat"><div class="stat-label">缺料</div><div class="stat-val red">${list.filter(o=>o.material==='缺料').length}</div></div>`;
+  if(!list.length){
+    document.getElementById('ord-table').innerHTML='<div class="empty-state"><div class="ei">📋</div>無符合訂單</div>';
+    document.getElementById('ord-cards').innerHTML='';return;
   }
-
-  function dot(o){
-    if(o.closed) return '<span class="status-dot dot-gray"></span>';
-    if(o.status==='已出清') return '<span class="status-dot dot-green"></span>';
-    if(o.status==='部分出貨') return '<span class="status-dot dot-amber"></span>';
-    return '<span class="status-dot dot-red"></span>';
-  }
-  function matTag(m){
-    if(m==='已備料') return '<span class="tag tag-yes">已備料</span>';
-    if(m==='缺料') return '<span class="tag tag-missing">缺料</span>';
-    if(m==='部分入料') return '<span class="tag tag-partial">部分入料</span>';
-    return '<span class="tag tag-no">待確認</span>';
-  }
-
-  const rows = list.map(o=>`
-    <tr class="${o.closed?'closed':''}">
-      <td><input type="checkbox" class="chk" ${o.closed?'checked':''} onchange="toggleClose('${o.id}')" title="${o.closed?'恢復進行中':'標記完成結案'}"></td>
-      <td><span class="order-no" onclick="openModal('${o.id}')">${o.no}</span></td>
-      <td>${o.sales_code||''}</td>
-      <td>${o.sales_name||''}</td>
-      <td style="font-weight:500">${o.customer}</td>
-      <td>${o.order_date||''}</td>
-      <td>${o.delivery_date||''}</td>
-      <td>${o.new_delivery_date||'—'}</td>
-      <td>${o.cust_order||''}</td>
-      <td>${o.col||''}</td>
-      <td style="color:#6b7280">${o.prod_no||''}</td>
-      <td>${o.prod_name}</td>
-      <td style="text-align:right">${o.qty.toLocaleString()}</td>
-      <td style="text-align:right;color:#16a34a">${o.shipped.toLocaleString()}</td>
-      <td style="text-align:right;color:${o.unshipped>0?'#d97706':'#9ca3af'}">${o.unshipped.toLocaleString()}</td>
-      <td style="text-align:right">${o.stock.toLocaleString()}</td>
-      <td>${o.currency||'TWD'}</td>
-      <td style="text-align:right">${parseFloat(o.price||0).toFixed(2)}</td>
-      <td style="text-align:right">${o.amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-      <td style="text-align:right">${o.unship_amt.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-      <td style="text-align:right">${Math.round(o.unship_local).toLocaleString()}</td>
-      <td style="text-align:right">${o.rate}</td>
-      <td><span class="tag ${o.tax==='是'?'tag-yes':'tag-no'}">${o.tax||'否'}</span></td>
-      <td>${matTag(o.material)}</td>
-      <td><span class="tag ${o.purchase==='是'?'tag-yes':'tag-no'}">${o.purchase||'否'}</span></td>
-      <td style="color:#9ca3af;font-size:11px">${o.source_no||'—'}</td>
-      <td>
-        <button class="btn sm" onclick="openModal('${o.id}')">編輯</button>
-        <button class="btn danger sm" onclick="deleteOrder('${o.id}')">刪除</button>
-      </td>
-    </tr>`).join('');
-
-  document.getElementById('tblContent').innerHTML = `
-    <table>
-    <thead><tr>
-      <th style="width:32px"></th>
-      <th>訂購單號</th><th>業務代號</th><th>業務姓名</th><th>客戶</th>
-      <th>訂購日期</th><th>預交日期</th><th>更新預交</th><th>客戶訂單</th>
-      <th>欄號</th><th>產品編號</th><th>品名規格</th>
-      <th>數量</th><th>已出</th><th>未出</th><th>現有庫存</th>
-      <th>幣別</th><th>單價</th><th>金額</th><th>未出金額</th><th>未出本幣</th>
-      <th>匯率</th><th>含稅</th><th>入料狀況</th><th>已轉採購</th><th>來源單號</th>
-      <th>操作</th>
-    </tr></thead>
-    <tbody>${rows}</tbody>
-    </table>`;
+  // Desktop table
+  const rows=list.map(o=>`<tr class="${o.closed?'closed-row':''}">
+    <td><input type="checkbox" class="chk" ${o.closed?'checked':''} onchange="toggleStatus('order','${o.id}')"></td>
+    <td><span class="link-cell" onclick="openModal('order','${o.id}')">${o.no}</span></td>
+    <td>${o.sales_code||''}</td><td>${o.sales_name||''}</td>
+    <td style="font-weight:500">${o.customer}</td>
+    <td>${o.order_date||''}</td><td>${o.delivery_date||''}</td><td>${o.new_delivery_date||'—'}</td>
+    <td>${o.cust_order||''}</td><td>${o.col||''}</td>
+    <td style="color:var(--text2)">${o.prod_no||''}</td><td>${o.prod_name}</td>
+    <td style="text-align:right">${o.qty.toLocaleString()}</td>
+    <td style="text-align:right;color:var(--green)">${o.shipped.toLocaleString()}</td>
+    <td style="text-align:right;color:${o.unshipped>0?'var(--amber)':'var(--text3)'}">${o.unshipped.toLocaleString()}</td>
+    <td style="text-align:right">${o.stock.toLocaleString()}</td>
+    <td>${o.currency||'TWD'}</td>
+    <td style="text-align:right">${(+o.price||0).toFixed(2)}</td>
+    <td style="text-align:right">${o.amount.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="text-align:right">${o.unship_amt.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td style="text-align:right">${Math.round(o.unship_local).toLocaleString()}</td>
+    <td style="text-align:right">${o.rate}</td>
+    <td><span class="tag ${o.tax==='是'?'tag-yes':'tag-no'}">${o.tax||'否'}</span></td>
+    <td>${matTag(o.material)}</td>
+    <td><span class="tag ${o.purchase==='是'?'tag-yes':'tag-no'}">${o.purchase||'否'}</span></td>
+    <td style="color:var(--text2);font-size:11px">${o.purchase_no||'—'}</td>
+    <td style="color:var(--text2);font-size:11px">${o.source_no||'—'}</td>
+    <td class="act-col"><button class="btn sm" onclick="openModal('order','${o.id}')">編輯</button> <button class="btn sm danger" onclick="delRecord('order','${o.id}')">刪</button></td>
+  </tr>`).join('');
+  document.getElementById('ord-table').innerHTML=`<table><thead><tr>
+    <th style="width:28px"></th><th>訂購單號</th><th>業代</th><th>業務</th><th>客戶</th>
+    <th>訂購日</th><th>預交日</th><th>更新預交</th><th>客戶訂單</th><th>欄號</th>
+    <th>產品編號</th><th>品名規格</th><th>數量</th><th>已出</th><th>未出</th><th>庫存</th>
+    <th>幣別</th><th>單價</th><th>金額</th><th>未出金額</th><th>未出本幣</th>
+    <th>匯率</th><th>含稅</th><th>入料狀況</th><th>已轉採購</th><th>請購單號</th><th>來源單號</th><th>操作</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+  // Mobile cards
+  document.getElementById('ord-cards').innerHTML=list.map(o=>`
+    <div class="m-card ${o.closed?'closed-row':''}">
+      <div class="m-card-header">
+        <div><div class="m-card-title">${o.no}</div><div class="m-card-sub">${o.customer} · ${o.prod_name}</div></div>
+        ${matTag(o.material)}
+      </div>
+      <div class="m-card-body">
+        <div class="m-field"><div class="m-field-label">預交日期</div><div class="m-field-val">${o.delivery_date||'—'}</div></div>
+        <div class="m-field"><div class="m-field-label">數量／已出</div><div class="m-field-val">${o.qty} / ${o.shipped}</div></div>
+        <div class="m-field"><div class="m-field-label">未出數量</div><div class="m-field-val" style="color:${o.unshipped>0?'var(--amber)':'var(--text3)'}">${o.unshipped}</div></div>
+        <div class="m-field"><div class="m-field-label">未出本幣</div><div class="m-field-val" style="color:var(--green)">${Math.round(o.unship_local).toLocaleString()}</div></div>
+        <div class="m-field"><div class="m-field-label">業務</div><div class="m-field-val">${o.sales_name||'—'}</div></div>
+        <div class="m-field"><div class="m-field-label">幣別／單價</div><div class="m-field-val">${o.currency} ${(+o.price||0).toFixed(2)}</div></div>
+      </div>
+      <div class="m-card-footer">
+        <label class="m-check-wrap"><input type="checkbox" class="chk" ${o.closed?'checked':''} onchange="toggleStatus('order','${o.id}')"> 結案</label>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn sm" onclick="openModal('order','${o.id}')">編輯</button>
+          <button class="btn sm danger" onclick="delRecord('order','${o.id}')">刪除</button>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
-// ---- Modal ----
-function openModal(id){
-  editId = id||null;
-  document.getElementById('modalTitle').textContent = id ? '編輯訂單' : '新增訂單';
-  if(id){
-    const o = orders.find(x=>String(x.id)===String(id));
-    if(o){
-      ['no','sales_code','sales_name','customer','cust_order','source_no',
-       'order_date','delivery_date','new_delivery_date','col','prod_no','prod_name',
-       'qty','shipped','stock','currency','rate','tax','price','desc','note','material','purchase'
-      ].forEach(k=>{ const el=document.getElementById('f_'+k); if(el) el.value=o[k]||''; });
-      document.getElementById('f_amount').value = o.amount.toFixed(2);
-      document.getElementById('f_unship_amt').value = o.unship_amt.toFixed(2);
-      document.getElementById('f_unship_local').value = Math.round(o.unship_local).toString();
-    }
-  } else {
-    ['no','sales_code','sales_name','customer','cust_order','source_no',
-     'col','prod_no','prod_name','qty','shipped','stock','price','desc','note'
-    ].forEach(k=>{ const el=document.getElementById('f_'+k); if(el) el.value=''; });
-    document.getElementById('f_rate').value='1';
-    document.getElementById('f_amount').value='';
-    document.getElementById('f_unship_amt').value='';
-    document.getElementById('f_unship_local').value='';
-    document.getElementById('f_order_date').value=new Date().toISOString().split('T')[0];
-    document.getElementById('f_delivery_date').value='';
-    document.getElementById('f_new_delivery_date').value='';
-    document.getElementById('f_currency').value='TWD';
-    document.getElementById('f_tax').value='是';
-    document.getElementById('f_material').value='待確認';
-    document.getElementById('f_purchase').value='否';
+// ── 請購渲染 ──
+function purTab(t){purActiveTab=t;document.getElementById('pur-tab-active').className='tab'+(t==='active'?' active':'');document.getElementById('pur-tab-done').className='tab'+(t==='done'?' active':'');renderPurchase();}
+
+function renderPurchase(){
+  const search=document.getElementById('pur-search').value.toLowerCase();
+  const fYear=document.getElementById('pur-year').value;
+  const fType=document.getElementById('pur-type').value;
+  const years=[...new Set(db.purchase.map(o=>o.year).filter(Boolean))].sort().reverse();
+  const sel=document.getElementById('pur-year');const cur=sel.value;
+  sel.innerHTML='<option value="">全部年份</option>'+years.map(y=>`<option${y===cur?' selected':''}>${y}</option>`).join('');
+  const active=db.purchase.filter(o=>!o.done),done=db.purchase.filter(o=>o.done);
+  document.getElementById('pur-cnt-a').textContent=active.length;
+  document.getElementById('pur-cnt-d').textContent=done.length;
+  const list=(purActiveTab==='active'?active:done).filter(o=>{
+    if(search&&![o.no,o.vendor,o.prod_name,o.prod_no].some(v=>v&&v.toLowerCase().includes(search)))return false;
+    if(fYear&&o.year!==fYear)return false;
+    if(fType&&o.type!==fType)return false;
+    return true;
+  });
+  document.getElementById('pur-stats').innerHTML=`
+    <div class="stat"><div class="stat-label">請購筆數</div><div class="stat-val blue">${list.length}</div></div>
+    <div class="stat"><div class="stat-label">總採購量</div><div class="stat-val">${list.reduce((s,o)=>s+o.qty,0).toLocaleString()}</div></div>
+    <div class="stat"><div class="stat-label">總成本</div><div class="stat-val amber">${Math.round(list.reduce((s,o)=>s+o.total_cost,0)).toLocaleString()}</div></div>`;
+  if(!list.length){
+    document.getElementById('pur-table').innerHTML='<div class="empty-state"><div class="ei">🛒</div>無符合請購單</div>';
+    document.getElementById('pur-cards').innerHTML='';return;
   }
-  document.getElementById('modalBg').classList.add('show');
+  const rows=list.map(o=>`<tr class="${o.done?'closed-row':''}">
+    <td><input type="checkbox" class="chk" ${o.done?'checked':''} onchange="toggleStatus('purchase','${o.id}')"></td>
+    <td style="font-size:11px;color:var(--text2)">${o.year||''}</td>
+    <td><span class="tag ${o.type==='國外'?'tag-partial':'tag-no'}">${o.type||'國內'}</span></td>
+    <td><span class="link-cell" onclick="openModal('purchase','${o.id}')">${o.no}</span></td>
+    <td>${o.vendor||''}</td><td style="color:var(--text2)">${o.vendor_quote||'—'}</td>
+    <td>${o.cust_order||'—'}</td>
+    <td style="color:var(--text2)">${o.prod_no||''}</td><td>${o.prod_name}</td>
+    <td style="text-align:right">${(+o.price||0).toFixed(2)}</td>
+    <td style="text-align:right">${o.qty.toLocaleString()}</td>
+    <td style="text-align:right">${(+o.export_freight||0).toFixed(2)}</td>
+    <td style="text-align:right">${(+o.import_freight||0).toFixed(2)}</td>
+    <td style="text-align:right;font-weight:500;color:var(--amber)">${o.total_cost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td>${o.arrival_date||'—'}</td><td>${o.sales||''}</td>
+    <td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis">${o.note||''}</td>
+    <td class="act-col"><button class="btn sm" onclick="openModal('purchase','${o.id}')">編輯</button> <button class="btn sm danger" onclick="delRecord('purchase','${o.id}')">刪</button></td>
+  </tr>`).join('');
+  document.getElementById('pur-table').innerHTML=`<table><thead><tr>
+    <th style="width:28px"></th><th>年份</th><th>國內外</th><th>請購單號</th>
+    <th>廠商</th><th>廠商報價編號</th><th>客戶訂單</th><th>產品編號</th><th>品名規格</th>
+    <th>採購單價</th><th>採購數量</th><th>出口運費</th><th>進口運費</th><th>總成本</th>
+    <th>入料時間</th><th>業務</th><th>備註</th><th>操作</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('pur-cards').innerHTML=list.map(o=>`
+    <div class="m-card ${o.done?'closed-row':''}">
+      <div class="m-card-header">
+        <div><div class="m-card-title">${o.no}</div><div class="m-card-sub">${o.vendor||'—'} · ${o.prod_name}</div></div>
+        <span class="tag ${o.type==='國外'?'tag-partial':'tag-no'}">${o.type||'國內'}</span>
+      </div>
+      <div class="m-card-body">
+        <div class="m-field"><div class="m-field-label">年份</div><div class="m-field-val">${o.year||'—'}</div></div>
+        <div class="m-field"><div class="m-field-label">採購數量</div><div class="m-field-val">${o.qty.toLocaleString()}</div></div>
+        <div class="m-field"><div class="m-field-label">採購單價</div><div class="m-field-val">${(+o.price||0).toFixed(2)}</div></div>
+        <div class="m-field"><div class="m-field-label">總成本</div><div class="m-field-val" style="color:var(--amber)">${o.total_cost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div></div>
+        <div class="m-field"><div class="m-field-label">入料時間</div><div class="m-field-val">${o.arrival_date||'—'}</div></div>
+        <div class="m-field"><div class="m-field-label">業務</div><div class="m-field-val">${o.sales||'—'}</div></div>
+      </div>
+      <div class="m-card-footer">
+        <label class="m-check-wrap"><input type="checkbox" class="chk" ${o.done?'checked':''} onchange="toggleStatus('purchase','${o.id}')"> 已入料</label>
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn sm" onclick="openModal('purchase','${o.id}')">編輯</button>
+          <button class="btn sm danger" onclick="delRecord('purchase','${o.id}')">刪除</button>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
-function closeModal(){ document.getElementById('modalBg').classList.remove('show'); }
-
-async function saveOrder(){
-  if(isSaving) return;
-  const no = document.getElementById('f_no').value.trim();
-  const customer = document.getElementById('f_customer').value.trim();
-  const prod_name = document.getElementById('f_prod_name').value.trim();
-  if(!no||!customer||!prod_name){ showToast('請填寫訂購單號、客戶、品名', 'error'); return; }
-
-  const g = id => document.getElementById('f_'+id).value.trim();
-  const o = {
-    no, customer, prod_name,
-    sales_code:g('sales_code'), sales_name:g('sales_name'),
-    cust_order:g('cust_order'), source_no:g('source_no'),
-    order_date:g('order_date'), delivery_date:g('delivery_date'),
-    new_delivery_date:g('new_delivery_date'),
-    col:g('col'), prod_no:g('prod_no'),
-    qty:parseFloat(g('qty'))||0, shipped:parseFloat(g('shipped'))||0,
-    stock:parseFloat(g('stock'))||0,
-    currency:g('currency'), rate:parseFloat(g('rate'))||1,
-    tax:g('tax'), price:parseFloat(g('price'))||0,
-    desc:g('desc'), note:g('note'),
-    material:g('material'), purchase:g('purchase'),
-    closed: editId ? (orders.find(x=>String(x.id)===String(editId))?.closed||false) : false
-  };
-  calcFields(o);
-
-  isSaving = true;
-  try {
-    if(SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec'){
-      if(editId){
-        await apiCall('update', {id: editId, data: o});
-        const idx = orders.findIndex(x=>String(x.id)===String(editId));
-        if(idx>=0){ o.id=editId; orders[idx]=o; }
-      } else {
-        const res = await apiCall('add', {data: o});
-        o.id = res.id;
-        orders.push(o);
-      }
-    } else {
-      // Demo 模式
-      if(editId){
-        const idx = orders.findIndex(x=>String(x.id)===String(editId));
-        if(idx>=0){ o.id=editId; orders[idx]=o; }
-      } else {
-        o.id = 'D' + Date.now();
-        orders.push(o);
-      }
-    }
-    showToast(editId ? '訂單已更新' : '訂單已新增');
-    closeModal();
-    render();
-  } catch(e){
-    showToast('儲存失敗：'+e.message, 'error');
+// ── 服務紀錄渲染 ──
+function renderService(){
+  const search=document.getElementById('svc-search').value.toLowerCase();
+  const fMonth=document.getElementById('svc-month').value;
+  const fSales=document.getElementById('svc-sales').value;
+  const salesSet=[...new Set(db.service.map(o=>o.sales).filter(Boolean))];
+  const sel=document.getElementById('svc-sales');const cur=sel.value;
+  sel.innerHTML='<option value="">全部業務</option>'+salesSet.map(s=>`<option${s===cur?' selected':''}>${s}</option>`).join('');
+  const list=db.service.filter(o=>{
+    if(search&&![o.no,o.customer,o.subject,o.order_no].some(v=>v&&v.toLowerCase().includes(search)))return false;
+    if(fMonth&&String(o.month)!==fMonth)return false;
+    if(fSales&&o.sales!==fSales)return false;
+    return true;
+  });
+  document.getElementById('svc-stats').innerHTML=`
+    <div class="stat"><div class="stat-label">服務筆數</div><div class="stat-val blue">${list.length}</div></div>
+    <div class="stat"><div class="stat-label">涉及客戶</div><div class="stat-val">${new Set(list.map(o=>o.customer)).size}</div></div>`;
+  if(!list.length){
+    document.getElementById('svc-table').innerHTML='<div class="empty-state"><div class="ei">🔧</div>無服務紀錄</div>';
+    document.getElementById('svc-cards').innerHTML='';return;
   }
-  isSaving = false;
+  const rows=list.map(o=>`<tr>
+    <td>${o.month||''}</td><td>${o.date||''}</td>
+    <td><span class="link-cell" onclick="openModal('service','${o.id}')">${o.no||'—'}</span></td>
+    <td style="font-weight:500">${o.customer}</td>
+    <td>${o.subject||''}</td><td>${o.sales||''}</td><td>${o.order_no||'—'}</td>
+    <td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis">${o.note||''}</td>
+    <td class="act-col"><button class="btn sm" onclick="openModal('service','${o.id}')">編輯</button> <button class="btn sm danger" onclick="delRecord('service','${o.id}')">刪</button></td>
+  </tr>`).join('');
+  document.getElementById('svc-table').innerHTML=`<table><thead><tr>
+    <th>月份</th><th>日期</th><th>單號</th><th>客戶</th><th>主旨明細</th>
+    <th>業務人員</th><th>訂單編號</th><th>備註</th><th>操作</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('svc-cards').innerHTML=list.map(o=>`
+    <div class="m-card">
+      <div class="m-card-header">
+        <div><div class="m-card-title">${o.customer}</div><div class="m-card-sub">${o.subject||'—'}</div></div>
+        <div style="font-size:11px;color:var(--text2);white-space:nowrap">${o.date||''}</div>
+      </div>
+      <div class="m-card-body">
+        <div class="m-field"><div class="m-field-label">月份</div><div class="m-field-val">${o.month||'—'} 月</div></div>
+        <div class="m-field"><div class="m-field-label">單號</div><div class="m-field-val" style="color:var(--blue)">${o.no||'—'}</div></div>
+        <div class="m-field"><div class="m-field-label">業務人員</div><div class="m-field-val">${o.sales||'—'}</div></div>
+        <div class="m-field"><div class="m-field-label">訂單編號</div><div class="m-field-val">${o.order_no||'—'}</div></div>
+        ${o.note?`<div class="m-field" style="grid-column:1/-1"><div class="m-field-label">備註</div><div class="m-field-val" style="font-weight:400;color:var(--text2)">${o.note}</div></div>`:''}
+      </div>
+      <div class="m-card-footer">
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn sm" onclick="openModal('service','${o.id}')">編輯</button>
+          <button class="btn sm danger" onclick="delRecord('service','${o.id}')">刪除</button>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
-async function toggleClose(id){
-  const o = orders.find(x=>String(x.id)===String(id));
-  if(!o) return;
-  o.closed = !o.closed;
-  try {
-    if(SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec'){
-      await apiCall('update', {id, data:{...o, closed: o.closed}});
-    }
-    showToast(o.closed ? '已結案' : '已恢復進行中');
-    render();
-  } catch(e){
-    o.closed = !o.closed; // rollback
-    showToast('操作失敗：'+e.message, 'error');
-    render();
+// ── 庫存渲染 ──
+function renderInventory(){
+  const search=document.getElementById('inv-search').value.toLowerCase();
+  const fWH=document.getElementById('inv-warehouse').value;
+  const whSet=[...new Set(db.inventory.map(o=>o.warehouse).filter(Boolean))];
+  const sel=document.getElementById('inv-warehouse');const cur=sel.value;
+  sel.innerHTML='<option value="">全部倉庫</option>'+whSet.map(w=>`<option${w===cur?' selected':''}>${w}</option>`).join('');
+  const list=db.inventory.filter(o=>{
+    if(search&&![o.no,o.desc].some(v=>v&&v.toLowerCase().includes(search)))return false;
+    if(fWH&&o.warehouse!==fWH)return false;
+    return true;
+  });
+  const tVal=list.reduce((s,o)=>s+o.total,0);
+  document.getElementById('inv-stats').innerHTML=`
+    <div class="stat"><div class="stat-label">品項數</div><div class="stat-val blue">${list.length}</div></div>
+    <div class="stat"><div class="stat-label">庫存總量</div><div class="stat-val">${list.reduce((s,o)=>s+o.qty,0).toLocaleString()}</div></div>
+    <div class="stat"><div class="stat-label">庫存總值</div><div class="stat-val green">${Math.round(tVal).toLocaleString()}</div></div>`;
+  if(!list.length){
+    document.getElementById('inv-table').innerHTML='<div class="empty-state"><div class="ei">📦</div>無庫存資料</div>';
+    document.getElementById('inv-cards').innerHTML='';return;
   }
+  const rows=list.map(o=>`<tr>
+    <td><span class="link-cell" onclick="openModal('inventory','${o.id}')">${o.no}</span></td>
+    <td>${o.desc}</td><td>${o.warehouse||''}</td>
+    <td style="text-align:right;font-weight:500">${o.qty.toLocaleString()}</td>
+    <td style="text-align:right">${(+o.price||0).toFixed(2)}</td>
+    <td style="text-align:right;font-weight:500;color:var(--green)">${o.total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+    <td>${o.last_date||'—'}</td>
+    <td class="act-col"><button class="btn sm" onclick="openModal('inventory','${o.id}')">編輯</button> <button class="btn sm danger" onclick="delRecord('inventory','${o.id}')">刪</button></td>
+  </tr>`).join('');
+  document.getElementById('inv-table').innerHTML=`<table><thead><tr>
+    <th>項目號碼</th><th>項目說明</th><th>倉庫代碼</th>
+    <th>庫存量</th><th>單價</th><th>合計</th><th>最後進貨日</th><th>操作</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+  document.getElementById('inv-cards').innerHTML=list.map(o=>`
+    <div class="m-card">
+      <div class="m-card-header">
+        <div><div class="m-card-title">${o.no}</div><div class="m-card-sub">${o.desc}</div></div>
+        <div style="font-size:12px;color:var(--text2)">${o.warehouse||''}</div>
+      </div>
+      <div class="m-card-body">
+        <div class="m-field"><div class="m-field-label">庫存量</div><div class="m-field-val">${o.qty.toLocaleString()}</div></div>
+        <div class="m-field"><div class="m-field-label">單價</div><div class="m-field-val">${(+o.price||0).toFixed(2)}</div></div>
+        <div class="m-field"><div class="m-field-label">合計</div><div class="m-field-val" style="color:var(--green)">${o.total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</div></div>
+        <div class="m-field"><div class="m-field-label">最後進貨日</div><div class="m-field-val">${o.last_date||'—'}</div></div>
+      </div>
+      <div class="m-card-footer">
+        <div style="margin-left:auto;display:flex;gap:6px;">
+          <button class="btn sm" onclick="openModal('inventory','${o.id}')">編輯</button>
+          <button class="btn sm danger" onclick="delRecord('inventory','${o.id}')">刪除</button>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
-async function deleteOrder(id){
-  if(!confirm('確定要刪除此訂單？')) return;
-  try {
-    if(SCRIPT_URL !== 'https://script.google.com/macros/s/AKfycbw9mHsgsbIAOaA0MO5eFiNFgrKc78vYBdMSWB_nX1r2G5KRYUib-WGogpGRgUDWZvDCkA/exec'){
-      await apiCall('delete', {id});
-    }
-    orders = orders.filter(x=>String(x.id)!==String(id));
-    showToast('訂單已刪除');
-    render();
-  } catch(e){
-    showToast('刪除失敗：'+e.message, 'error');
-  }
+// ── 匯出 ──
+function exportCSV(type){
+  let headers=[],rows=[],list=[];
+  if(type==='orders'){list=db.orders.filter(o=>ordActiveTab==='active'?!o.closed:o.closed);headers=['訂購單號','業代','業務','客戶','客戶訂單','訂購日','預交日','更新預交','欄號','產品編號','品名規格','數量','已出','未出','庫存','幣別','單價','金額','未出金額','未出本幣','匯率','含稅','入料狀況','已轉採購','請購單號','來源單號','狀態'];rows=list.map(o=>[o.no,o.sales_code,o.sales_name,o.customer,o.cust_order,o.order_date,o.delivery_date,o.new_delivery_date,o.col,o.prod_no,o.prod_name,o.qty,o.shipped,o.unshipped,o.stock,o.currency,o.price,o.amount?.toFixed(2),o.unship_amt?.toFixed(2),Math.round(o.unship_local||0),o.rate,o.tax,o.material,o.purchase,o.purchase_no,o.source_no,o.status]);}
+  if(type==='purchase'){list=db.purchase.filter(o=>purActiveTab==='active'?!o.done:o.done);headers=['年份','國內外','請購單號','廠商','廠商報價編號','客戶訂單','產品編號','品名規格','採購單價','採購數量','出口運費','進口運費','總成本','入料時間','業務','備註'];rows=list.map(o=>[o.year,o.type,o.no,o.vendor,o.vendor_quote,o.cust_order,o.prod_no,o.prod_name,o.price,o.qty,o.export_freight,o.import_freight,o.total_cost?.toFixed(2),o.arrival_date,o.sales,o.note]);}
+  if(type==='service'){list=db.service;headers=['月份','日期','單號','客戶','主旨','業務','訂單編號','備註'];rows=list.map(o=>[o.month,o.date,o.no,o.customer,o.subject,o.sales,o.order_no,o.note]);}
+  if(type==='inventory'){list=db.inventory;headers=['項目號碼','項目說明','倉庫代碼','庫存量','單價','合計','最後進貨日'];rows=list.map(o=>[o.no,o.desc,o.warehouse,o.qty,o.price,o.total?.toFixed(2),o.last_date]);}
+  const csv='\uFEFF'+headers.join(',')+'\n'+rows.map(r=>r.map(v=>'"'+(String(v||'').replace(/"/g,'""'))+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download=type+'_'+new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')+'.csv';a.click();
 }
 
-function exportCSV(){
-  const list = orders.filter(o => activeTab==='active' ? !o.closed : o.closed);
-  const headers = ['訂購單號','業務代號','業務姓名','客戶','客戶訂單','訂購日期','預交日期','更新預交日',
-    '欄號','產品編號','品名規格','數量','已出','未出','現有庫存','幣別','單價','金額','未出金額','未出本幣','匯率','含稅','入料狀況','已轉採購','來源單號','狀態'];
-  const rows = list.map(o=>[o.no,o.sales_code,o.sales_name,o.customer,o.cust_order,o.order_date,o.delivery_date,o.new_delivery_date,
-    o.col,o.prod_no,o.prod_name,o.qty,o.shipped,o.unshipped,o.stock,o.currency,o.price,o.amount.toFixed(2),o.unship_amt.toFixed(2),Math.round(o.unship_local),o.rate,o.tax,o.material,o.purchase,o.source_no,o.status]
-    .map(v=>'"'+(String(v||'').replace(/"/g,'""'))+'"').join(','));
-  const csv = '\uFEFF' + headers.join(',') + '\n' + rows.join('\n');
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
-  a.download = `訂單_${new Date().toLocaleDateString('zh-TW').replace(/\//g,'-')}.csv`;
-  a.click();
-}
-
+// ── Demo ──
 function getDemoData(){
-  return [
-    {id:'D1',no:'SO-2024-001',sales_code:'S01',sales_name:'王小明',customer:'台積電',cust_order:'PO-9001',source_no:'QT-001',order_date:'2024-03-01',delivery_date:'2024-04-15',new_delivery_date:'2024-04-20',col:'001',prod_no:'P-10001',prod_name:'精密電阻 0402 10K',qty:5000,shipped:2000,stock:800,currency:'USD',rate:32.5,tax:'是',price:0.05,desc:'RoHS合規',note:'急單',material:'已備料',purchase:'是',closed:false},
-    {id:'D2',no:'SO-2024-002',sales_code:'S02',sales_name:'李大華',customer:'聯發科',cust_order:'PO-7701',source_no:'',order_date:'2024-03-05',delivery_date:'2024-04-30',new_delivery_date:'',col:'001',prod_no:'P-20033',prod_name:'MLCC 100nF 0603',qty:10000,shipped:10000,stock:0,currency:'TWD',rate:1,tax:'否',price:1.2,desc:'',note:'',material:'已備料',purchase:'是',closed:true},
-    {id:'D3',no:'SO-2024-003',sales_code:'S01',sales_name:'王小明',customer:'鴻海',cust_order:'PO-5512',source_no:'QT-008',order_date:'2024-03-10',delivery_date:'2024-05-01',new_delivery_date:'2024-05-10',col:'002',prod_no:'P-33201',prod_name:'IC 驅動晶片 DRV8876',qty:200,shipped:50,stock:120,currency:'USD',rate:32.5,tax:'是',price:4.80,desc:'需認證',note:'',material:'部分入料',purchase:'否',closed:false},
-    {id:'D4',no:'SO-2024-004',sales_code:'S03',sales_name:'陳美玲',customer:'廣達',cust_order:'PO-3309',source_no:'',order_date:'2024-03-15',delivery_date:'2024-05-20',new_delivery_date:'',col:'001',prod_no:'P-44010',prod_name:'電感 4.7uH 0805',qty:3000,shipped:0,stock:0,currency:'JPY',rate:0.21,tax:'否',price:80,desc:'',note:'確認交期',material:'缺料',purchase:'否',closed:false},
-  ];
+  return{
+    orders:[
+      {id:'O1',no:'SO-2024-001',sales_code:'S01',sales_name:'王小明',customer:'台積電',cust_order:'PO-9001',source_no:'QT-001',order_date:'2024-03-01',delivery_date:'2024-04-15',new_delivery_date:'2024-04-20',col:'001',prod_no:'P-10001',prod_name:'精密電阻 0402 10K',qty:5000,shipped:2000,stock:800,currency:'USD',rate:32.5,tax:'是',price:0.05,desc:'',note:'',material:'已備料',purchase:'是',purchase_no:'PR-2024-001',closed:false},
+      {id:'O2',no:'SO-2024-002',sales_code:'S02',sales_name:'李大華',customer:'聯發科',cust_order:'PO-7701',source_no:'',order_date:'2024-03-05',delivery_date:'2024-04-30',new_delivery_date:'',col:'001',prod_no:'P-20033',prod_name:'MLCC 100nF 0603',qty:10000,shipped:10000,stock:0,currency:'TWD',rate:1,tax:'否',price:1.2,desc:'',note:'',material:'已備料',purchase:'是',purchase_no:'PR-2024-002',closed:true},
+      {id:'O3',no:'SO-2024-003',sales_code:'S01',sales_name:'王小明',customer:'鴻海',cust_order:'PO-5512',source_no:'QT-008',order_date:'2024-03-10',delivery_date:'2024-05-01',new_delivery_date:'2024-05-10',col:'002',prod_no:'P-33201',prod_name:'IC 驅動晶片 DRV8876',qty:200,shipped:50,stock:120,currency:'USD',rate:32.5,tax:'是',price:4.8,desc:'',note:'',material:'部分入料',purchase:'否',purchase_no:'',closed:false},
+      {id:'O4',no:'SO-2024-004',sales_code:'S03',sales_name:'陳美玲',customer:'廣達',cust_order:'PO-3309',source_no:'',order_date:'2024-03-15',delivery_date:'2024-05-20',new_delivery_date:'',col:'001',prod_no:'P-44010',prod_name:'電感 4.7uH 0805',qty:3000,shipped:0,stock:0,currency:'JPY',rate:0.21,tax:'否',price:80,desc:'',note:'',material:'缺料',purchase:'否',purchase_no:'',closed:false},
+    ],
+    purchase:[
+      {id:'P1',year:'2024',type:'國外',no:'PR-2024-001',sales:'王小明',vendor:'Yageo Corp',vendor_quote:'YG-Q-20240301',cust_order:'PO-9001',prod_no:'P-10001',prod_name:'精密電阻 0402 10K',qty:8000,price:0.03,export_freight:120,import_freight:80,arrival_date:'2024-04-10',note:'需加急',done:false},
+      {id:'P2',year:'2024',type:'國內',no:'PR-2024-002',sales:'李大華',vendor:'台灣村田',vendor_quote:'TW-Q-0220',cust_order:'PO-7701',prod_no:'P-20033',prod_name:'MLCC 100nF 0603',qty:15000,price:0.9,export_freight:0,import_freight:0,arrival_date:'2024-03-20',note:'',done:true},
+    ],
+    service:[
+      {id:'S1',month:'3',date:'2024-03-05',no:'SV-001',customer:'台積電',subject:'現場安裝協助',sales:'王小明',order_no:'SO-2024-001',note:'客戶滿意'},
+      {id:'S2',month:'3',date:'2024-03-12',no:'SV-002',customer:'鴻海',subject:'品質異常處理',sales:'王小明',order_no:'SO-2024-003',note:'已更換批號'},
+      {id:'S3',month:'4',date:'2024-04-02',no:'SV-003',customer:'聯發科',subject:'年度回訪',sales:'李大華',order_no:'',note:''},
+    ],
+    inventory:[
+      {id:'I1',no:'INV-001',desc:'精密電阻 0402 10K',warehouse:'A區',qty:3200,price:0.05,last_date:'2024-04-10'},
+      {id:'I2',no:'INV-002',desc:'MLCC 100nF 0603',warehouse:'A區',qty:5500,price:1.2,last_date:'2024-03-20'},
+      {id:'I3',no:'INV-003',desc:'IC 驅動晶片 DRV8876',warehouse:'B區',qty:120,price:4.8,last_date:'2024-03-15'},
+      {id:'I4',no:'INV-004',desc:'電感 4.7uH 0805',warehouse:'A區',qty:0,price:80,last_date:'2024-02-28'},
+    ]
+  };
 }
 
-// 啟動
-syncData();
+syncAll();
 </script>
 </body>
 </html>
