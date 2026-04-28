@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>E5管理系統</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -466,8 +467,8 @@ tr.closed-row td{opacity:0.5;}
 
 <script>
 // ============================================================
-const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyMcicFAXFC4uejQcgkpBVHwRDfkU412UvTP3VSYEPQj_lII_07qIjuZxm694ea4rx3WQ/exec';
-const API_TOKEN  = 'E5kingyoup04705536';
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzN4okf6O9qvzuLKrKAIFvU2w7i9W2ovt_jC8LcCo3AYhlDu0pFZF7ceD8XTH7CZqKJrw/exec';
+const API_TOKEN  = 'Kingyoup04705536E5';
 // ============================================================
 
 let db = {orders:[],purchase:[],service:[],inventory:[]};
@@ -510,7 +511,7 @@ function switchPage(page,el){
 
 // ── API ──
 async function apiCall(action,data={}){
-  if(SCRIPT_URL==='https://script.google.com/macros/s/AKfycbyMcicFAXFC4uejQcgkpBVHwRDfkU412UvTP3VSYEPQj_lII_07qIjuZxm694ea4rx3WQ/exec') throw new Error('demo');
+  if(SCRIPT_URL==='https://script.google.com/macros/s/AKfycbzN4okf6O9qvzuLKrKAIFvU2w7i9W2ovt_jC8LcCo3AYhlDu0pFZF7ceD8XTH7CZqKJrw/exec') throw new Error('demo');
   const r=await fetch(SCRIPT_URL,{method:'POST',body:JSON.stringify({action,token:API_TOKEN,...data})});
   const j=await r.json();
   if(!j.success) throw new Error(j.error||'error');
@@ -631,7 +632,7 @@ async function saveRecord(type){
   const id=editState[type];
   if(id){const idx=db[dbKey].findIndex(x=>String(x.id)===String(id));if(idx>=0){rec.id=id;db[dbKey][idx]=rec;}}
   else{rec.id='L'+Date.now();db[dbKey].push(rec);}
-  try{if(SCRIPT_URL!=='https://script.google.com/macros/s/AKfycbyMcicFAXFC4uejQcgkpBVHwRDfkU412UvTP3VSYEPQj_lII_07qIjuZxm694ea4rx3WQ/exec')await apiCall(id?'update':'add',{module:dbKey,id,data:rec});}catch(e){}
+  try{if(SCRIPT_URL!=='https://script.google.com/macros/s/AKfycbzN4okf6O9qvzuLKrKAIFvU2w7i9W2ovt_jC8LcCo3AYhlDu0pFZF7ceD8XTH7CZqKJrw/exec')await apiCall(id?'update':'add',{module:dbKey,id,data:rec});}catch(e){}
   toast(id?'已更新':'已新增'); closeModal(type); updateNavBadges();
   if(type==='order')renderOrders();
   if(type==='purchase')renderPurchase();
@@ -645,7 +646,7 @@ async function toggleStatus(type,id){
   const o=db[dbKey].find(x=>String(x.id)===String(id));
   if(!o)return;
   o[key]=!o[key];
-  try{if(SCRIPT_URL!=='https://script.google.com/macros/s/AKfycbyMcicFAXFC4uejQcgkpBVHwRDfkU412UvTP3VSYEPQj_lII_07qIjuZxm694ea4rx3WQ/exec')await apiCall('update',{module:dbKey,id,data:o});}catch(e){}
+  try{if(SCRIPT_URL!=='https://script.google.com/macros/s/AKfycbzN4okf6O9qvzuLKrKAIFvU2w7i9W2ovt_jC8LcCo3AYhlDu0pFZF7ceD8XTH7CZqKJrw/exec')await apiCall('update',{module:dbKey,id,data:o});}catch(e){}
   toast(o[key]?(type==='order'?'已結案':'已入料'):(type==='order'?'恢復進行中':'恢復待入料'));
   updateNavBadges();
   if(type==='order')renderOrders(); else renderPurchase();
@@ -655,7 +656,7 @@ async function delRecord(type,id){
   if(!confirm('確定要刪除？'))return;
   const dbKey=type==='order'?'orders':type==='inventory'?'inventory':type;
   db[dbKey]=db[dbKey].filter(x=>String(x.id)!==String(id));
-  try{if(SCRIPT_URL!=='https://script.google.com/macros/s/AKfycbyMcicFAXFC4uejQcgkpBVHwRDfkU412UvTP3VSYEPQj_lII_07qIjuZxm694ea4rx3WQ/exec')await apiCall('delete',{module:dbKey,id});}catch(e){}
+  try{if(SCRIPT_URL!=='https://script.google.com/macros/s/AKfycbzN4okf6O9qvzuLKrKAIFvU2w7i9W2ovt_jC8LcCo3AYhlDu0pFZF7ceD8XTH7CZqKJrw/exec')await apiCall('delete',{module:dbKey,id});}catch(e){}
   toast('已刪除'); updateNavBadges();
   if(type==='order')renderOrders();
   if(type==='purchase')renderPurchase();
