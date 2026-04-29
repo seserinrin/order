@@ -667,6 +667,12 @@ async function delRecord(type,id){
 // ── 訂單渲染 ──
 function ordTab(t){ordActiveTab=t;document.getElementById('ord-tab-active').className='tab'+(t==='active'?' active':'');document.getElementById('ord-tab-closed').className='tab'+(t==='closed'?' active':'');renderOrders();}
 
+function fmtDate(v){
+  if(!v) return '—';
+  const d = new Date(v);
+  if(isNaN(d)) return v;
+  return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+(d.getDate());
+}
 function matTag(m){const map={'已備料':'tag-yes','缺料':'tag-miss','部分入料':'tag-partial','待確認':'tag-no'};return `<span class="tag ${map[m]||'tag-no'}">${m||'待確認'}</span>`;}
 
 function renderOrders(){
@@ -700,7 +706,7 @@ function renderOrders(){
     <td><span class="link-cell" onclick="openModal('order','${o.id}')">${o.no}</span></td>
     <td>${o.sales_code||''}</td><td>${o.sales_name||''}</td>
     <td style="font-weight:500">${o.customer}</td>
-    <td>${o.order_date||''}</td><td>${o.delivery_date||''}</td><td>${o.new_delivery_date||'—'}</td>
+    <td>${fmtDate(o.order_date)}</td><td>${fmtDate(o.delivery_date)}</td><td>${fmtDate(o.new_delivery_date)}</td>
     <td>${o.cust_order||''}</td><td>${o.col||''}</td>
     <td style="color:var(--text2)">${o.prod_no||''}</td><td>${o.prod_name}</td>
     <td style="text-align:right">${o.qty.toLocaleString()}</td>
@@ -792,7 +798,7 @@ function renderPurchase(){
     <td style="text-align:right">${(+o.export_freight||0).toFixed(2)}</td>
     <td style="text-align:right">${(+o.import_freight||0).toFixed(2)}</td>
     <td style="text-align:right;font-weight:500;color:var(--amber)">${o.total_cost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-    <td>${o.arrival_date||'—'}</td><td>${o.sales||''}</td>
+    <td>${fmtDate(o.arrival_date)}</td><td>${o.sales||''}</td>
     <td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis">${o.note||''}</td>
     <td class="act-col"><button class="btn sm" onclick="openModal('purchase','${o.id}')">編輯</button> <button class="btn sm danger" onclick="delRecord('purchase','${o.id}')">刪</button></td>
   </tr>`).join('');
@@ -908,7 +914,7 @@ function renderInventory(){
     <td style="text-align:right;font-weight:500">${o.qty.toLocaleString()}</td>
     <td style="text-align:right">${(+o.price||0).toFixed(2)}</td>
     <td style="text-align:right;font-weight:500;color:var(--green)">${o.total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
-    <td>${o.last_date||'—'}</td>
+    <td>${fmtDate(o.last_date)}</td>
     <td class="act-col"><button class="btn sm" onclick="openModal('inventory','${o.id}')">編輯</button> <button class="btn sm danger" onclick="delRecord('inventory','${o.id}')">刪</button></td>
   </tr>`).join('');
   document.getElementById('inv-table').innerHTML=`<table><thead><tr>
