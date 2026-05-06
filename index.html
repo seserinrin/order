@@ -723,8 +723,7 @@ function renderOrders(){
     <td>${matTag(o.material)}</td>
     <td><span class="tag ${o.purchase==='是'?'tag-yes':'tag-no'}">${o.purchase||'否'}</span></td>
     <td style="color:var(--text2);font-size:11px">${o.purchase_no||'—'}</td>
-    <td style="color:var(--text2);font-size:11px">${o.source_no||'—'}</td>
-    <td class="act-col"><button class="btn sm" onclick="openModal('order','${o.id}')">編輯</button> <button class="btn sm danger" onclick="delRecord('order','${o.id}')">刪</button></td>
+   <td class="act-col"><button class="btn sm" onclick="openModal('order','${o.id}')">✏️ 編輯</button> <button class="btn sm danger" onclick="delRecord('order','${o.id}')">刪</button></td>
   </tr>`).join('');
   document.getElementById('ord-table').innerHTML=`<table><thead><tr>
     <th style="width:28px"></th><th>訂購單號</th><th>業代</th><th>業務</th><th>客戶</th>
