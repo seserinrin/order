@@ -565,6 +565,18 @@ function openModal(type,id=null){
 
 function closeModal(type){document.getElementById('modal-'+type).classList.remove('show');}
 
+// ✅ 用 data attribute 傳 id，避免 inline onclick 字串解析問題
+function openModalById(btn){
+  const type=btn.dataset.type;
+  const id=btn.dataset.id;
+  openModal(type, id);
+}
+function delRecordById(btn){
+  const type=btn.dataset.type;
+  const id=btn.dataset.id;
+  delRecord(type, id);
+}
+
 async function saveRecord(type){
   const g=id=>{const el=document.getElementById(id);return el?el.value.trim():'';};
   let rec={};
@@ -659,7 +671,7 @@ function renderOrders(){
   // ✅ 已移除來源單號欄
   const rows=list.map(o=>`<tr class="${o.closed?'closed-row':''}">
     <td><input type="checkbox" class="chk" ${o.closed?'checked':''} onchange="toggleStatus('order','${o.id}')"></td>
-    <td><span class="link-cell" onclick="openModal('order','${o.id}')">${o.no}</span></td>
+    <td><span class="link-cell" data-type="order" data-id="${o.id}" onclick="openModalById(this)">${o.no}</span></td>
     <td>${o.sales_code||''}</td><td>${o.sales_name||''}</td>
     <td style="font-weight:500">${o.customer}</td>
     <td>${fmtDate(o.order_date)}</td><td>${fmtDate(o.delivery_date)}</td><td>${fmtDate(o.new_delivery_date)}</td>
@@ -676,18 +688,20 @@ function renderOrders(){
     <td style="text-align:right">${Math.round(o.unship_local).toLocaleString()}</td>
     <td style="text-align:right">${o.rate}</td>
     <td><span class="tag ${o.tax==='是'?'tag-yes':'tag-no'}">${o.tax||'否'}</span></td>
-    <td>${matTag(o.material)}</td>
     <td><span class="tag ${o.purchase==='是'?'tag-yes':'tag-no'}">${o.purchase||'否'}</span></td>
+    <td>${matTag(o.material)}</td>
     <td style="color:var(--text2);font-size:11px">${o.purchase_no||'—'}</td>
-    <td class="act-col"><button class="btn sm" onclick="openModal('order','${o.id}')">✏️ 編輯</button> <button class="btn sm danger" onclick="delRecord('order','${o.id}')">刪</button></td>
+    <td class="act-col">
+      <button class="btn sm" data-type="order" data-id="${o.id}" onclick="openModalById(this)">✏️ 編輯</button>
+      <button class="btn sm danger" data-type="order" data-id="${o.id}" onclick="delRecordById(this)">刪</button>
+    </td>
   </tr>`).join('');
-  // ✅ 表頭已移除「來源單號」
   document.getElementById('ord-table').innerHTML=`<table><thead><tr>
     <th style="width:28px"></th><th>訂購單號</th><th>業代</th><th>業務</th><th>客戶</th>
     <th>訂購日</th><th>預交日</th><th>更新預交</th><th>客戶訂單</th><th>欄號</th>
     <th>產品編號</th><th>品名規格</th><th>數量</th><th>已出</th><th>未出</th><th>庫存</th>
     <th>幣別</th><th>單價</th><th>金額</th><th>未出金額</th><th>未出本幣</th>
-    <th>匯率</th><th>含稅</th><th>入料狀況</th><th>已轉採購</th><th>請購單號</th><th>操作</th>
+    <th>匯率</th><th>含稅</th><th>已轉採購</th><th>入料狀況</th><th>請購單號</th><th>操作</th>
   </tr></thead><tbody>${rows}</tbody></table>`;
   document.getElementById('ord-cards').innerHTML=list.map(o=>`
     <div class="m-card ${o.closed?'closed-row':''}">
@@ -706,8 +720,8 @@ function renderOrders(){
       <div class="m-card-footer">
         <label class="m-check-wrap"><input type="checkbox" class="chk" ${o.closed?'checked':''} onchange="toggleStatus('order','${o.id}')"> 結案</label>
         <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn sm" onclick="openModal('order','${o.id}')">✏️ 編輯</button>
-          <button class="btn sm danger" onclick="delRecord('order','${o.id}')">刪除</button>
+          <button class="btn sm" data-type="order" data-id="${o.id}" onclick="openModalById(this)">✏️ 編輯</button>
+          <button class="btn sm danger" data-type="order" data-id="${o.id}" onclick="delRecordById(this)">刪除</button>
         </div>
       </div>
     </div>`).join('');
@@ -743,7 +757,7 @@ function renderPurchase(){
     <td><input type="checkbox" class="chk" ${o.done?'checked':''} onchange="toggleStatus('purchase','${o.id}')"></td>
     <td style="font-size:11px;color:var(--text2)">${o.year||''}</td>
     <td><span class="tag ${o.type==='國外'?'tag-partial':'tag-no'}">${o.type||'國內'}</span></td>
-    <td><span class="link-cell" onclick="openModal('purchase','${o.id}')">${o.no}</span></td>
+    <td><span class="link-cell" data-type="purchase" data-id="${o.id}" onclick="openModalById(this)">${o.no}</span></td>
     <td>${o.vendor||''}</td><td style="color:var(--text2)">${o.vendor_quote||'—'}</td>
     <td>${o.cust_order||'—'}</td>
     <td style="color:var(--text2)">${o.prod_no||''}</td><td>${o.prod_name}</td>
@@ -754,7 +768,7 @@ function renderPurchase(){
     <td style="text-align:right;font-weight:500;color:var(--amber)">${o.total_cost.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
     <td>${fmtDate(o.arrival_date)}</td><td>${o.sales||''}</td>
     <td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis">${o.note||''}</td>
-    <td class="act-col"><button class="btn sm" onclick="openModal('purchase','${o.id}')">✏️ 編輯</button> <button class="btn sm danger" onclick="delRecord('purchase','${o.id}')">刪</button></td>
+    <td class="act-col"><button class="btn sm" data-type="purchase" data-id="${o.id}" onclick="openModalById(this)">✏️ 編輯</button> <button class="btn sm danger" data-type="purchase" data-id="${o.id}" onclick="delRecordById(this)">刪</button></td>
   </tr>`).join('');
   document.getElementById('pur-table').innerHTML=`<table><thead><tr>
     <th style="width:28px"></th><th>年份</th><th>國內外</th><th>請購單號</th>
@@ -779,8 +793,8 @@ function renderPurchase(){
       <div class="m-card-footer">
         <label class="m-check-wrap"><input type="checkbox" class="chk" ${o.done?'checked':''} onchange="toggleStatus('purchase','${o.id}')"> 已入料</label>
         <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn sm" onclick="openModal('purchase','${o.id}')">✏️ 編輯</button>
-          <button class="btn sm danger" onclick="delRecord('purchase','${o.id}')">刪除</button>
+          <button class="btn sm" data-type="purchase" data-id="${o.id}" onclick="openModalById(this)">✏️ 編輯</button>
+          <button class="btn sm danger" data-type="purchase" data-id="${o.id}" onclick="delRecordById(this)">刪除</button>
         </div>
       </div>
     </div>`).join('');
@@ -808,11 +822,11 @@ function renderService(){
   }
   const rows=list.map(o=>`<tr>
     <td>${o.month||''}</td><td>${fmtDate(o.date)}</td>
-    <td><span class="link-cell" onclick="openModal('service','${o.id}')">${o.no||'—'}</span></td>
+    <td><span class="link-cell" data-type="service" data-id="${o.id}" onclick="openModalById(this)">${o.no||'—'}</span></td>
     <td style="font-weight:500">${o.customer}</td>
     <td>${o.subject||''}</td><td>${o.sales||''}</td><td>${o.order_no||'—'}</td>
     <td style="color:var(--text2);max-width:160px;overflow:hidden;text-overflow:ellipsis">${o.note||''}</td>
-    <td class="act-col"><button class="btn sm" onclick="openModal('service','${o.id}')">✏️ 編輯</button> <button class="btn sm danger" onclick="delRecord('service','${o.id}')">刪</button></td>
+    <td class="act-col"><button class="btn sm" data-type="service" data-id="${o.id}" onclick="openModalById(this)">✏️ 編輯</button> <button class="btn sm danger" data-type="service" data-id="${o.id}" onclick="delRecordById(this)">刪</button></td>
   </tr>`).join('');
   document.getElementById('svc-table').innerHTML=`<table><thead><tr>
     <th>月份</th><th>日期</th><th>單號</th><th>客戶</th><th>主旨明細</th>
@@ -833,8 +847,8 @@ function renderService(){
       </div>
       <div class="m-card-footer">
         <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn sm" onclick="openModal('service','${o.id}')">✏️ 編輯</button>
-          <button class="btn sm danger" onclick="delRecord('service','${o.id}')">刪除</button>
+          <button class="btn sm" data-type="service" data-id="${o.id}" onclick="openModalById(this)">✏️ 編輯</button>
+          <button class="btn sm danger" data-type="service" data-id="${o.id}" onclick="delRecordById(this)">刪除</button>
         </div>
       </div>
     </div>`).join('');
@@ -861,13 +875,13 @@ function renderInventory(){
     document.getElementById('inv-cards').innerHTML='';return;
   }
   const rows=list.map(o=>`<tr>
-    <td><span class="link-cell" onclick="openModal('inventory','${o.id}')">${o.no}</span></td>
+    <td><span class="link-cell" data-type="inventory" data-id="${o.id}" onclick="openModalById(this)">${o.no}</span></td>
     <td>${o.desc}</td><td>${o.warehouse||''}</td>
     <td style="text-align:right;font-weight:500">${o.qty.toLocaleString()}</td>
     <td style="text-align:right">${(+o.price||0).toFixed(2)}</td>
     <td style="text-align:right;font-weight:500;color:var(--green)">${o.total.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
     <td>${fmtDate(o.last_date)}</td>
-    <td class="act-col"><button class="btn sm" onclick="openModal('inventory','${o.id}')">✏️ 編輯</button> <button class="btn sm danger" onclick="delRecord('inventory','${o.id}')">刪</button></td>
+    <td class="act-col"><button class="btn sm" data-type="inventory" data-id="${o.id}" onclick="openModalById(this)">✏️ 編輯</button> <button class="btn sm danger" data-type="inventory" data-id="${o.id}" onclick="delRecordById(this)">刪</button></td>
   </tr>`).join('');
   document.getElementById('inv-table').innerHTML=`<table><thead><tr>
     <th>項目號碼</th><th>項目說明</th><th>倉庫代碼</th>
@@ -887,8 +901,8 @@ function renderInventory(){
       </div>
       <div class="m-card-footer">
         <div style="margin-left:auto;display:flex;gap:6px;">
-          <button class="btn sm" onclick="openModal('inventory','${o.id}')">✏️ 編輯</button>
-          <button class="btn sm danger" onclick="delRecord('inventory','${o.id}')">刪除</button>
+          <button class="btn sm" data-type="inventory" data-id="${o.id}" onclick="openModalById(this)">✏️ 編輯</button>
+          <button class="btn sm danger" data-type="inventory" data-id="${o.id}" onclick="delRecordById(this)">刪除</button>
         </div>
       </div>
     </div>`).join('');
