@@ -463,7 +463,15 @@ async function syncAll(){
   try{
     const res=await apiCall('getAll');
     db=res.data||db;
-    ['orders','purchase','service','inventory'].forEach(k=>{if(db[k])db[k].forEach(o=>calcFields(k,o));});
+    // ✅ 確保每筆資料都有有效的 id
+    ['orders','purchase','service','inventory'].forEach(k=>{
+      if(db[k]) db[k].forEach((o,i)=>{
+        // 如果 id 是空的，用索引補一個暫時 id
+        if(!o.id && o.id!==0) o.id = k[0].toUpperCase()+i+'_'+Date.now();
+        o.id = String(o.id); // 統一轉成字串
+        calcFields(k,o);
+      });
+    });
     document.getElementById('syncStatus').textContent='✅ '+new Date().toLocaleTimeString('zh-TW');
     toast('資料已同步');
   }catch(e){
@@ -569,6 +577,19 @@ function closeModal(type){document.getElementById('modal-'+type).classList.remov
 function openModalById(btn){
   const type=btn.dataset.type;
   const id=btn.dataset.id;
+  // 找到對應記錄確認 id 有效
+  const dbKey=type==='order'?'orders':type==='inventory'?'inventory':type;
+  const rec=(db[dbKey]||[]).find(x=>String(x.id)===String(id));
+  if(!rec){
+    // id 對不上，嘗試用 row index 取得
+    const row=btn.closest('tr');
+    if(row){
+      const rows=Array.from(row.parentElement.children);
+      const idx=rows.indexOf(row);
+      const list=(dbKey==='orders'?(ordActiveTab==='active'?db.orders.filter(o=>!o.closed):db.orders.filter(o=>o.closed)):db[dbKey]);
+      if(list&&list[idx]) { openModal(type, String(list[idx].id)); return; }
+    }
+  }
   openModal(type, id);
 }
 function delRecordById(btn){
