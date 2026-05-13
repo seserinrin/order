@@ -432,7 +432,7 @@ function closeSidebar(){
 function toast(msg,type='ok'){
   const el=document.getElementById('toast');
   el.textContent=msg; el.className='toast show '+type;
-  setTimeout(()=>{el.className='toast';},3000);
+  setTimeout(()=>{el.className='toast';},5000);
 }
 
 function switchPage(page,el){
@@ -527,10 +527,25 @@ function iCalc(){
   document.getElementById('i_total').value=((+document.getElementById('i_qty').value||0)*(+document.getElementById('i_price').value||0)).toFixed(2);
 }
 
+// ── 日期格式轉換：任何格式 → yyyy-MM-dd (input[type=date] 需要) ──
+function toInputDate(v){
+  if(!v) return '';
+  // 已經是 yyyy-MM-dd
+  if(/^\d{4}-\d{2}-\d{2}$/.test(String(v))) return String(v);
+  // yyyy/M/D 或含時間戳
+  const d=new Date(v);
+  if(!isNaN(d)){
+    const yyyy=d.getFullYear();
+    const mm=String(d.getMonth()+1).padStart(2,'0');
+    const dd=String(d.getDate()).padStart(2,'0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+  return '';
+}
+
 // ── Modal：修正標題顯示 ──
 function openModal(type,id=null){
   editState[type]=id;
-  // ✅ 修正：編輯時顯示正確標題
   const newTitles={order:'新增訂單',purchase:'新增請購單',service:'新增服務紀錄',inventory:'新增庫存項目'};
   const editTitles={order:'編輯訂單',purchase:'編輯請購單',service:'編輯服務紀錄',inventory:'編輯庫存項目'};
   document.getElementById('modal-'+type+'-title').textContent=id?editTitles[type]:newTitles[type];
@@ -539,33 +554,66 @@ function openModal(type,id=null){
   const rec=id?(db[dbKey]||[]).find(x=>String(x.id)===String(id)):null;
 
   if(type==='order'){
-    ['no','sales_code','sales_name','customer','cust_order','source_no','order_date','delivery_date','new_delivery_date','col','prod_no','prod_name','qty','shipped','stock','currency','rate','tax','price','desc','note','material','purchase','purchase_no'].forEach(f=>{
+    // 文字欄位
+    ['no','sales_code','sales_name','customer','cust_order','source_no','col','prod_no','prod_name','qty','shipped','stock','rate','price','desc','note','purchase_no'].forEach(f=>{
       const el=document.getElementById('o_'+f);
-      if(el) el.value=rec?rec[f]||'':'';
+      if(el) el.value=rec?rec[f]??'':'';
     });
-    if(!rec){document.getElementById('o_rate').value='1';document.getElementById('o_order_date').value=new Date().toISOString().split('T')[0];}
+    // 日期欄位（需轉換格式）
+    ['order_date','delivery_date','new_delivery_date'].forEach(f=>{
+      const el=document.getElementById('o_'+f);
+      if(el) el.value=rec?toInputDate(rec[f]):'';
+    });
+    // select 欄位（需用 value 指定才能選中）
+    const selCurrency=document.getElementById('o_currency');
+    const selTax=document.getElementById('o_tax');
+    const selPurchase=document.getElementById('o_purchase');
+    const selMaterial=document.getElementById('o_material');
+    if(rec){
+      if(selCurrency) selCurrency.value=rec.currency||'TWD';
+      if(selTax) selTax.value=rec.tax||'否';
+      if(selPurchase) selPurchase.value=rec.purchase||'否';
+      if(selMaterial) selMaterial.value=rec.material||'待確認';
+    } else {
+      if(selCurrency) selCurrency.value='TWD';
+      if(selTax) selTax.value='否';
+      if(selPurchase) selPurchase.value='否';
+      if(selMaterial) selMaterial.value='待確認';
+      document.getElementById('o_rate').value='1';
+      document.getElementById('o_order_date').value=new Date().toISOString().split('T')[0];
+    }
     document.getElementById('o_amount').value=rec?rec.amount?.toFixed(2)||'':'';
     document.getElementById('o_unship_amt').value=rec?rec.unship_amt?.toFixed(2)||'':'';
     document.getElementById('o_unship_local').value=rec?Math.round(rec.unship_local||0):'';
   }
   if(type==='purchase'){
-    ['year','type','no','sales','vendor','vendor_quote','cust_order','prod_no','prod_name','qty','price','export_freight','import_freight','arrival_date','note'].forEach(f=>{
+    ['year','no','sales','vendor','vendor_quote','cust_order','prod_no','prod_name','qty','price','export_freight','import_freight','note'].forEach(f=>{
       const el=document.getElementById('p_'+f);
-      if(el) el.value=rec?rec[f]||'':'';
+      if(el) el.value=rec?rec[f]??'':'';
     });
+    const el=document.getElementById('p_arrival_date');
+    if(el) el.value=rec?toInputDate(rec.arrival_date):'';
+    const selType=document.getElementById('p_type');
+    if(selType) selType.value=rec?rec.type||'國內':'國內';
     document.getElementById('p_total_cost').value=rec?rec.total_cost?.toFixed(2)||'':'';
   }
   if(type==='service'){
-    ['month','date','no','customer','subject','sales','order_no','note'].forEach(f=>{
+    ['no','customer','subject','sales','order_no','note'].forEach(f=>{
       const el=document.getElementById('s_'+f);
-      if(el) el.value=rec?rec[f]||'':'';
+      if(el) el.value=rec?rec[f]??'':'';
     });
+    const elDate=document.getElementById('s_date');
+    if(elDate) elDate.value=rec?toInputDate(rec.date):'';
+    const selMonth=document.getElementById('s_month');
+    if(selMonth) selMonth.value=rec?rec.month||'':'';
   }
   if(type==='inventory'){
-    ['no','desc','warehouse','qty','price','last_date'].forEach(f=>{
+    ['no','desc','warehouse','qty','price'].forEach(f=>{
       const el=document.getElementById('i_'+f);
-      if(el) el.value=rec?rec[f]||'':'';
+      if(el) el.value=rec?rec[f]??'':'';
     });
+    const elDate=document.getElementById('i_last_date');
+    if(elDate) elDate.value=rec?toInputDate(rec.last_date):'';
     document.getElementById('i_total').value=rec?rec.total?.toFixed(2)||'':'';
   }
   document.getElementById('modal-'+type).classList.add('show');
@@ -620,14 +668,30 @@ async function saveRecord(type){
   }
   calcFields(type==='order'?'orders':type,rec);
   const id=editState[type];
-  if(id){const idx=db[dbKey].findIndex(x=>String(x.id)===String(id));if(idx>=0){rec.id=id;db[dbKey][idx]=rec;}}
-  else{rec.id='L'+Date.now();db[dbKey].push(rec);}
-  try{if(SCRIPT_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE')await apiCall(id?'update':'add',{module:dbKey,id,data:rec});}catch(e){}
-  toast(id?'已更新':'已新增'); closeModal(type); updateNavBadges();
+  if(id){
+    const idx=db[dbKey].findIndex(x=>String(x.id)===String(id));
+    if(idx>=0){rec.id=id;db[dbKey][idx]=rec;}
+  } else {
+    rec.id='L'+Date.now();
+    db[dbKey].push(rec);
+  }
+  // ✅ 同步到 Google Sheets，並顯示明確的成功/失敗訊息
+  closeModal(type);
+  updateNavBadges();
   if(type==='order')renderOrders();
   if(type==='purchase')renderPurchase();
   if(type==='service')renderService();
   if(type==='inventory')renderInventory();
+  try{
+    if(SCRIPT_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
+      await apiCall(id?'update':'add',{module:dbKey,id:id||null,data:rec});
+      toast(id?'✅ 已更新並同步到 Sheets':'✅ 已新增並同步到 Sheets','ok');
+    } else {
+      toast(id?'已更新（Demo 模式）':'已新增（Demo 模式）','ok');
+    }
+  }catch(e){
+    toast('⚠️ 本機已儲存，但同步 Sheets 失敗：'+e.message,'err');
+  }
 }
 
 async function toggleStatus(type,id){
