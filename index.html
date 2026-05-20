@@ -625,20 +625,24 @@ function closeModal(type){document.getElementById('modal-'+type).classList.remov
 function openModalById(btn){
   const type=btn.dataset.type;
   const id=btn.dataset.id;
-  // 找到對應記錄確認 id 有效
   const dbKey=type==='order'?'orders':type==='inventory'?'inventory':type;
+
+  // 先直接用 id 找
   const rec=(db[dbKey]||[]).find(x=>String(x.id)===String(id));
-  if(!rec){
-    // id 對不上，嘗試用 row index 取得
-    const row=btn.closest('tr');
-    if(row){
-      const rows=Array.from(row.parentElement.children);
-      const idx=rows.indexOf(row);
-      const list=(dbKey==='orders'?(ordActiveTab==='active'?db.orders.filter(o=>!o.closed):db.orders.filter(o=>o.closed)):db[dbKey]);
-      if(list&&list[idx]) { openModal(type, String(list[idx].id)); return; }
-    }
+  if(rec){ openModal(type, String(rec.id)); return; }
+
+  // 找不到時，用 tr 的位置索引當備援
+  const row=btn.closest('tr');
+  if(row){
+    const idx=Array.from(row.parentElement.children).indexOf(row);
+    let list=db[dbKey]||[];
+    // orders/purchase 要考慮目前是哪個 tab
+    if(dbKey==='orders') list=ordActiveTab==='active'?db.orders.filter(o=>!o.closed):db.orders.filter(o=>o.closed);
+    if(dbKey==='purchase') list=purActiveTab==='active'?db.purchase.filter(o=>!o.done):db.purchase.filter(o=>o.done);
+    if(list[idx]){ openModal(type, String(list[idx].id)); return; }
   }
-  openModal(type, id);
+
+  toast('找不到記錄，請先同步再試','err');
 }
 function delRecordById(btn){
   const type=btn.dataset.type;
@@ -684,13 +688,16 @@ async function saveRecord(type){
   if(type==='inventory')renderInventory();
   try{
     if(SCRIPT_URL!=='YOUR_GOOGLE_APPS_SCRIPT_URL_HERE'){
-      await apiCall(id?'update':'add',{module:dbKey,id:id||null,data:rec});
+      const action=id?'update':'add';
+      console.log('API call:', action, 'module:', dbKey, 'id:', id, 'type of id:', typeof id);
+      await apiCall(action,{module:dbKey,id:id||null,data:rec});
       toast(id?'✅ 已更新並同步到 Sheets':'✅ 已新增並同步到 Sheets','ok');
     } else {
       toast(id?'已更新（Demo 模式）':'已新增（Demo 模式）','ok');
     }
   }catch(e){
-    toast('⚠️ 本機已儲存，但同步 Sheets 失敗：'+e.message,'err');
+    toast('⚠️ 同步失敗：'+e.message,'err');
+    console.error('sync error:', e, 'id:', id, 'dbKey:', dbKey);
   }
 }
 
